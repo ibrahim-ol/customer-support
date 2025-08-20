@@ -1,16 +1,10 @@
 import { generateText, CoreMessage } from "ai";
 import { replyModel } from "../utils/models.ts";
 import { Config } from "../utils/config.ts";
+import { MoodCategory, MOOD_ENUM } from "../types/mood.ts";
 
-export type MoodCategory =
-  | "happy"
-  | "frustrated"
-  | "confused"
-  | "angry"
-  | "satisfied"
-  | "neutral"
-  | "excited"
-  | "disappointed";
+// Re-export for backward compatibility
+export type { MoodCategory };
 
 const instructions = [
   "You are an helpful customer support assistant.",
@@ -144,18 +138,7 @@ export async function classifyMood(args: {
   const mood = result.text.trim().toLowerCase() as MoodCategory;
 
   // Validate the response is one of our expected categories
-  const validMoods: MoodCategory[] = [
-    "happy",
-    "frustrated",
-    "confused",
-    "angry",
-    "satisfied",
-    "neutral",
-    "excited",
-    "disappointed",
-  ];
-
-  if (validMoods.includes(mood)) {
+  if (MOOD_ENUM.includes(mood as any)) {
     return mood;
   }
 

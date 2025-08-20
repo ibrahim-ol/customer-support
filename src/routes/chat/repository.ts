@@ -6,7 +6,7 @@ import {
   aiSummary,
   moodTracking,
 } from "../../db/schema.ts";
-import { MoodCategory } from "../../services/ai.service.ts";
+import { MoodCategory } from "../../types/mood.ts";
 
 export const ChatRepository = {
   getConversationChats(conversationId: string) {

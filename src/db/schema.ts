@@ -2,6 +2,7 @@ import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 import { dbId } from "../utils/index.ts";
 import { timestamp } from "drizzle-orm/mysql-core";
+import { MOOD_ENUM } from "../types/mood.ts";
 
 const timestamps = {
   createdAt: integer("created_at", { mode: "timestamp" })
@@ -18,20 +19,7 @@ export const conversations = sqliteTable("conversations", {
   status: text("status", { enum: ["active", "killed"] })
     .notNull()
     .default("active"),
-  mood: text("mood", {
-    enum: [
-      "happy",
-      "frustrated",
-      "confused",
-      "angry",
-      "satisfied",
-      "neutral",
-      "excited",
-      "disappointed",
-    ],
-  })
-    .notNull()
-    .default("neutral"),
+  mood: text("mood", { enum: MOOD_ENUM }).notNull().default("neutral"),
   ...timestamps,
 });
 export const chat = sqliteTable("chat", {
@@ -67,18 +55,7 @@ export const moodTracking = sqliteTable("mood_tracking", {
   conversationId: text("conversation_id")
     .notNull()
     .references(() => conversations.id, { onDelete: "cascade" }),
-  mood: text("mood", {
-    enum: [
-      "happy",
-      "frustrated",
-      "confused",
-      "angry",
-      "satisfied",
-      "neutral",
-      "excited",
-      "disappointed",
-    ],
-  }).notNull(),
+  mood: text("mood", { enum: MOOD_ENUM }).notNull(),
   messageId: text("message_id").references(() => chat.id, {
     onDelete: "cascade",
   }),
