@@ -1,4 +1,5 @@
 import { seedProducts } from "./seed-products.ts";
+import { seedConversations } from "./seed-conversations.ts";
 
 async function runSeeds() {
   try {
@@ -6,6 +7,11 @@ async function runSeeds() {
 
     // Run product seeding
     await seedProducts();
+
+    console.log("");
+
+    // Run conversation seeding
+    await seedConversations();
 
     console.log("\n✅ All seeding completed successfully!");
   } catch (error) {

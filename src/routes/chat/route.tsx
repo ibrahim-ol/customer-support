@@ -32,7 +32,7 @@ router.post("/new", async (c) => {
 
   message = message.trim();
 
-  const conversation = await ChatRepository.createConversation();
+  const conversation = await ChatRepository.createConversation("web_chat");
 
   const messageRes = await ChatRepository.addChat({
     message,
@@ -93,7 +93,7 @@ router.post(
     let conversationId = conversation_id;
 
     if (!conversationId) {
-      const res = await ChatRepository.createConversation();
+      const res = await ChatRepository.createConversation("web_chat");
       conversationId = res.id;
     } else {
       const exists = await ChatRepository.findConversationById(conversationId);

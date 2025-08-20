@@ -21,10 +21,10 @@ export const ChatRepository = {
     return result[0];
   },
 
-  async createConversation() {
+  async createConversation(channel: string, customerName?: string) {
     const res = await db
       .insert(conversations)
-      .values({ customerName: "anonymous", channel: "unknown" })
+      .values({ customerName: customerName ?? "anonymous", channel })
       .returning({ id: conversations.id });
     return res[0];
   },
