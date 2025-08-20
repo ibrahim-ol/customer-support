@@ -142,15 +142,15 @@ export function OngoingChatView() {
       <ChatLayout>
         <div className="flex h-full flex-1 justify-center items-center">
           <div className="text-center">
-            <h2 className="text-xl font-semibold text-gray-600">
+            <h2 className="text-xl font-semibold text-black">
               No conversation selected
             </h2>
-            <p className="text-gray-500 mt-2">
+            <p className="text-gray-800 mt-2">
               Please select or start a conversation.
             </p>
             <a
-              href="/chat/new"
-              className="mt-4 inline-block bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+              href="/chat/view"
+              className="mt-4 inline-block bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
             >
               Start New Chat
             </a>
@@ -164,25 +164,25 @@ export function OngoingChatView() {
     <ChatLayout>
       <div className="flex flex-col h-full max-w-4xl mx-auto">
         {/* Chat Header */}
-        <div className="bg-white border-b border-gray-200 p-4">
+        <div className="bg-white border-b border-black p-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-lg font-semibold text-black">
               Conversation: {conversationId.slice(0, 8)}...
             </h2>
             <button
               onClick={() => fetchMessages(conversationId)}
               disabled={loading}
-              className="text-blue-500 hover:text-blue-700 disabled:opacity-50"
+              className="text-black hover:text-gray-700 disabled:opacity-50"
             >
               ↻ Refresh
             </button>
           </div>
           {error && (
-            <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm flex items-center justify-between">
+            <div className="mt-3 p-3 bg-white border border-black rounded-lg text-black text-sm flex items-center justify-between">
               <span>{error}</span>
               <button
                 onClick={() => setError(null)}
-                className="ml-2 text-red-600 hover:text-red-800 font-bold text-lg leading-none"
+                className="ml-2 text-black hover:text-gray-700 font-bold text-lg leading-none"
               >
                 ×
               </button>
@@ -191,17 +191,17 @@ export function OngoingChatView() {
         </div>
 
         {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
           {loading && messages.length === 0 ? (
             <div className="flex justify-center items-center h-full">
-              <div className="flex items-center space-x-2 text-gray-500">
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-500 border-t-transparent"></div>
+              <div className="flex items-center space-x-2 text-black">
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-black border-t-transparent"></div>
                 <span>Loading messages...</span>
               </div>
             </div>
           ) : messages.length === 0 ? (
             <div className="flex justify-center items-center h-full">
-              <div className="text-center text-gray-500">
+              <div className="text-center text-black">
                 <div className="text-4xl mb-4">💬</div>
                 <p className="text-lg">No messages yet.</p>
                 <p className="text-sm mt-1">Start the conversation below!</p>
@@ -218,8 +218,8 @@ export function OngoingChatView() {
                 <div
                   className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg shadow-sm ${
                     message.role === "user"
-                      ? "bg-blue-500 text-white"
-                      : "bg-white text-gray-800 border border-gray-200"
+                      ? "bg-black text-white"
+                      : "bg-white text-black border border-black"
                   }`}
                 >
                   <div className="whitespace-pre-wrap break-words">
@@ -228,8 +228,8 @@ export function OngoingChatView() {
                   <div
                     className={`text-xs mt-2 ${
                       message.role === "user"
-                        ? "text-blue-100"
-                        : "text-gray-500"
+                        ? "text-gray-300"
+                        : "text-gray-600"
                     }`}
                   >
                     {message.role === "user" ? "You" : "Assistant"} •{" "}
@@ -243,17 +243,17 @@ export function OngoingChatView() {
           {/* Sending indicator */}
           {sending && (
             <div className="flex justify-start">
-              <div className="bg-white text-gray-800 border border-gray-200 px-4 py-3 rounded-lg shadow-sm">
+              <div className="bg-white text-black border border-black px-4 py-3 rounded-lg shadow-sm">
                 <div className="flex items-center space-x-2">
                   <div className="animate-pulse">Assistant is typing...</div>
                   <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-black rounded-full animate-bounce"></div>
                     <div
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                      className="w-2 h-2 bg-black rounded-full animate-bounce"
                       style="animation-delay: 0.1s"
                     ></div>
                     <div
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                      className="w-2 h-2 bg-black rounded-full animate-bounce"
                       style="animation-delay: 0.2s"
                     ></div>
                   </div>
@@ -267,7 +267,7 @@ export function OngoingChatView() {
         </div>
 
         {/* Message Input */}
-        <div className="bg-white border-t border-gray-200 p-4">
+        <div className="bg-white border-t border-black p-4">
           <form onSubmit={handleSubmit} className="flex space-x-3">
             <div className="flex-1">
               <textarea
@@ -275,7 +275,7 @@ export function OngoingChatView() {
                 onChange={handleTextareaChange}
                 onKeyDown={handleKeyPress}
                 placeholder="Type your message..."
-                className="w-full resize-none border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full resize-none border border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-black"
                 rows={1}
                 disabled={sending}
                 style={{ minHeight: "48px", maxHeight: "120px" }}
@@ -284,7 +284,7 @@ export function OngoingChatView() {
             <button
               type="submit"
               disabled={sending || !newMessage.trim()}
-              className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center space-x-2 min-w-[80px] justify-center"
+              className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center space-x-2 min-w-[80px] justify-center"
             >
               {sending ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
@@ -293,7 +293,7 @@ export function OngoingChatView() {
               )}
             </button>
           </form>
-          <div className="mt-2 text-xs text-gray-500 flex justify-between">
+          <div className="mt-2 text-xs text-black flex justify-between">
             <span>Press Enter to send, Shift+Enter for new line</span>
             <span>{messages.length} messages</span>
           </div>

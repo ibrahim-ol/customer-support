@@ -104,12 +104,13 @@ The main chat component located at `/src/frontend/pages/ongoing-chat/ongoing.tsx
 
 ## Styling
 
-The interface uses Tailwind CSS with a custom theme defined in the base layout:
+The interface uses Tailwind CSS with a monochrome theme:
 
-- **Primary Color**: Blue (#06b6d4)
-- **Background**: Off-white (#f3f4f6)  
-- **Text**: Charcoal (#111827)
-- **Messages**: User messages are blue, assistant messages are white with borders
+- **Primary Color**: Black (#000000)
+- **Background**: White (#ffffff)  
+- **Text**: Black and gray shades
+- **Borders**: Black (#000000)
+- **Messages**: User messages are black with white text, assistant messages are white with black text and black borders
 
 ## Error Handling
 

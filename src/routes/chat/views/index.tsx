@@ -11,7 +11,7 @@ export function StartChatView({ error }: { error?: string }) {
           <form
             action="/chat/new"
             method="post"
-            className="relative border rounded-2xl border-slate"
+            className="relative border rounded-2xl border-black"
             onSubmit={() => setSubmitted(true)}
           >
             <textarea
@@ -20,7 +20,7 @@ export function StartChatView({ error }: { error?: string }) {
               minlength={5}
               maxlength={1000}
               rows={2}
-              className="px-4 pt-3 pb-8 w-[500px] focus:outline-none max-h-[300px]"
+              className="px-4 pt-3 pb-8 w-[500px] focus:outline-none max-h-[300px] text-black"
               placeholder="How can I help you today?"
             />
             <button
