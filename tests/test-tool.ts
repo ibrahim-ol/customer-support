@@ -1,4 +1,4 @@
-import { generateReply } from "./services/ai.service.ts";
+import { generateReply } from "../src/services/ai.service.ts";
 
 async function testProductTool() {
   console.log("🧪 Testing AI product tool functionality...\n");
@@ -11,9 +11,10 @@ async function testProductTool() {
       chatHistory: [
         {
           role: "user",
-          message: "Hi, I'm interested in learning about what services you offer. Can you tell me what your company does?"
-        }
-      ]
+          message:
+            "Hi, I'm interested in learning about what services you offer. Can you tell me what your company does?",
+        },
+      ],
     });
 
     console.log("AI Response:", result1.text);
@@ -32,9 +33,10 @@ async function testProductTool() {
       chatHistory: [
         {
           role: "user",
-          message: "I need help building an online store for my business. Do you offer e-commerce development services and what would that cost?"
-        }
-      ]
+          message:
+            "I need help building an online store for my business. Do you offer e-commerce development services and what would that cost?",
+        },
+      ],
     });
 
     console.log("AI Response:", result2.text);
@@ -53,9 +55,10 @@ async function testProductTool() {
       chatHistory: [
         {
           role: "user",
-          message: "Do you build mobile apps? I need something for both iPhone and Android users."
-        }
-      ]
+          message:
+            "Do you build mobile apps? I need something for both iPhone and Android users.",
+        },
+      ],
     });
 
     console.log("AI Response:", result3.text);
@@ -74,9 +77,10 @@ async function testProductTool() {
       chatHistory: [
         {
           role: "user",
-          message: "What are your typical prices for web application development? I'm trying to budget for a project."
-        }
-      ]
+          message:
+            "What are your typical prices for web application development? I'm trying to budget for a project.",
+        },
+      ],
     });
 
     console.log("AI Response:", result4.text);
@@ -95,9 +99,9 @@ async function testProductTool() {
       chatHistory: [
         {
           role: "user",
-          message: "What's the weather like today?"
-        }
-      ]
+          message: "What's the weather like today?",
+        },
+      ],
     });
 
     console.log("AI Response:", result5.text);

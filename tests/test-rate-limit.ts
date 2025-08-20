@@ -6,7 +6,7 @@ import {
   apiRateLimit,
   strictRateLimit,
   createRateLimit,
-} from "./src/middleware/rateLimit.ts";
+} from "../src/middleware/rateLimit.ts";
 
 // Create a test app to verify rate limiting with hono-rate-limiter
 const testApp = new Hono();
