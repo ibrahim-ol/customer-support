@@ -132,4 +132,70 @@ router.get("/api/stats", requireAdminAuth, async (c) => {
   }
 });
 
+router.post("/api/conversations/:id/kill", requireAdminAuth, async (c) => {
+  try {
+    const id = c.req.param("id");
+    const success = await AdminService.killConversation(id);
+
+    if (!success) {
+      return c.json(
+        {
+          success: false,
+          error: "Failed to kill conversation",
+        },
+        500,
+      );
+    }
+
+    return c.json({
+      success: true,
+      message: "Conversation killed successfully",
+    });
+  } catch (error) {
+    console.error("Error killing conversation:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Failed to kill conversation",
+      },
+      500,
+    );
+  }
+});
+
+router.post(
+  "/api/conversations/:id/reactivate",
+  requireAdminAuth,
+  async (c) => {
+    try {
+      const id = c.req.param("id");
+      const success = await AdminService.reactivateConversation(id);
+
+      if (!success) {
+        return c.json(
+          {
+            success: false,
+            error: "Failed to reactivate conversation",
+          },
+          500,
+        );
+      }
+
+      return c.json({
+        success: true,
+        message: "Conversation reactivated successfully",
+      });
+    } catch (error) {
+      console.error("Error reactivating conversation:", error);
+      return c.json(
+        {
+          success: false,
+          error: "Failed to reactivate conversation",
+        },
+        500,
+      );
+    }
+  },
+);
+
 export default router;

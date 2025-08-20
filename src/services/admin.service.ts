@@ -13,6 +13,7 @@ export const AdminService = {
         id: conversations.id,
         customerName: conversations.customerName,
         channel: conversations.channel,
+        status: conversations.status,
         createdAt: conversations.createdAt,
         updatedAt: conversations.updatedAt,
         messageCount: sql<number>`count(${chat.id})`.as("messageCount"),
@@ -81,5 +82,45 @@ export const AdminService = {
       totalMessages,
       averageMessagesPerConversation,
     };
+  },
+
+  /**
+   * Kill a conversation - prevents further user messages
+   */
+  async killConversation(id: string): Promise<boolean> {
+    try {
+      const result = await db
+        .update(conversations)
+        .set({
+          status: "killed",
+          updatedAt: new Date(),
+        })
+        .where(eq(conversations.id, id));
+
+      return true;
+    } catch (error) {
+      console.error("Error killing conversation:", error);
+      return false;
+    }
+  },
+
+  /**
+   * Reactivate a killed conversation
+   */
+  async reactivateConversation(id: string): Promise<boolean> {
+    try {
+      const result = await db
+        .update(conversations)
+        .set({
+          status: "active",
+          updatedAt: new Date(),
+        })
+        .where(eq(conversations.id, id));
+
+      return true;
+    } catch (error) {
+      console.error("Error reactivating conversation:", error);
+      return false;
+    }
   },
 };

@@ -65,6 +65,17 @@ router.post(
       if (!exists) {
         return c.json({ error: "conversation not found" }, 404);
       }
+
+      // Check if conversation is killed
+      if (exists.status === "killed") {
+        return c.json(
+          {
+            error:
+              "This conversation has been closed and cannot accept new messages",
+          },
+          403,
+        );
+      }
     }
 
     const messageRes = await ChatRepository.addChat({

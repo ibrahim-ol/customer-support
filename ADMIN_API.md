@@ -42,6 +42,7 @@ GET /admin/api/conversations
       "id": "conv_123",
       "customerName": "John Doe",
       "channel": "web",
+      "status": "active",
       "createdAt": "2024-01-15T10:30:00Z",
       "updatedAt": "2024-01-15T11:45:00Z",
       "messageCount": 5,
@@ -74,6 +75,7 @@ GET /admin/api/conversations/conv_123
     "id": "conv_123",
     "customerName": "John Doe",
     "channel": "web",
+    "status": "active",
     "createdAt": "2024-01-15T10:30:00Z",
     "updatedAt": "2024-01-15T11:45:00Z",
     "messages": [
@@ -156,6 +158,50 @@ Content-Type: application/json
 }
 ```
 
+### 5. Kill Conversation
+
+Mark a conversation as killed, preventing users from sending new messages.
+
+**Endpoint:** `POST /admin/api/conversations/:id/kill`
+
+**Parameters:**
+- `id` (string): The conversation ID
+
+**Example Request:**
+```
+POST /admin/api/conversations/conv_123/kill
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Conversation killed successfully"
+}
+```
+
+### 6. Reactivate Conversation
+
+Reactivate a killed conversation, allowing users to send messages again.
+
+**Endpoint:** `POST /admin/api/conversations/:id/reactivate`
+
+**Parameters:**
+- `id` (string): The conversation ID
+
+**Example Request:**
+```
+POST /admin/api/conversations/conv_123/reactivate
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Conversation reactivated successfully"
+}
+```
+
 
 
 ## Error Responses
@@ -211,6 +257,34 @@ async function getConversation(id) {
   return await response.json();
 }
 
+// Kill conversation
+async function killConversation(id) {
+  const response = await fetch(`/admin/api/conversations/${id}/kill`, {
+    method: 'POST',
+    credentials: 'include'
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to kill conversation');
+  }
+  
+  return await response.json();
+}
+
+// Reactivate conversation
+async function reactivateConversation(id) {
+  const response = await fetch(`/admin/api/conversations/${id}/reactivate`, {
+    method: 'POST',
+    credentials: 'include'
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to reactivate conversation');
+  }
+  
+  return await response.json();
+}
+
 
 ```
 
@@ -230,6 +304,14 @@ curl -X PUT "http://localhost:3000/admin/api/conversations/conv_123" \
   -b cookies.txt \
   -d '{"customerName": "Updated Name", "channel": "email"}'
 
+# Kill conversation
+curl -X POST "http://localhost:3000/admin/api/conversations/conv_123/kill" \
+  -b cookies.txt
+
+# Reactivate conversation
+curl -X POST "http://localhost:3000/admin/api/conversations/conv_123/reactivate" \
+  -b cookies.txt
+
 
 ```
 
@@ -243,3 +325,26 @@ curl -X PUT "http://localhost:3000/admin/api/conversations/conv_123" \
 ## Data Format
 
 The conversations list endpoint returns all conversations in a simple array format, ordered by most recently updated first.
+
+## Conversation Status
+
+Conversations can have one of two statuses:
+- `active`: Normal state, users can send messages
+- `killed`: Conversation is closed, users cannot send new messages
+
+When a conversation is killed:
+- The user will receive a 403 error when trying to send messages
+- The conversation appears with a "KILLED" status in the admin interface
+- Admins can still view all messages and reactivate if needed
+
+## User Message Blocking
+
+When users attempt to send messages to a killed conversation, they will receive:
+
+```json
+{
+  "error": "This conversation has been closed and cannot accept new messages"
+}
+```
+
+With HTTP status code 403 (Forbidden).

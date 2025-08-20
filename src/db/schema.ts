@@ -15,17 +15,20 @@ export const conversations = sqliteTable("conversations", {
   id: text("id").primaryKey().$defaultFn(dbId),
   customerName: text("customer_name").notNull(),
   channel: text("channel").notNull(),
+  status: text("status", { enum: ["active", "killed"] })
+    .notNull()
+    .default("active"),
   ...timestamps,
 });
 export const chat = sqliteTable("chat", {
   id: text("id").primaryKey().$defaultFn(dbId),
   message: text("message").notNull(),
-  role: text("role", {enum: ['user', 'assistant']}).notNull(),
+  role: text("role", { enum: ["user", "assistant"] }).notNull(),
   userId: integer("user_id"),
   conversationId: text("conversation_id")
     .notNull()
     .references(() => conversations.id, { onDelete: "cascade" }),
-    ...timestamps,
+  ...timestamps,
 });
 
 export const product = sqliteTable("product", {

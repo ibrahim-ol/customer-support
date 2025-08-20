@@ -15,6 +15,7 @@ interface ConversationListItem {
   id: string;
   customerName: string;
   channel: string;
+  status: "active" | "killed";
   createdAt: string;
   updatedAt: string;
   messageCount: number;
@@ -40,6 +41,8 @@ interface ConversationDetailResponse {
 export function AdminConversationsView() {
   const conversationsApi = useApi<ConversationsResponse>();
   const conversationDetailApi = useApi<ConversationDetailResponse>();
+  const killApi = useApi<{ success: boolean; message: string }>();
+  const reactivateApi = useApi<{ success: boolean; message: string }>();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // Fetch conversations list on mount
@@ -79,6 +82,61 @@ export function AdminConversationsView() {
 
   const conversations = conversationsApi.data?.data || [];
   const selectedConversation = conversationDetailApi.data?.data;
+
+  const handleKillConversation = async (conversationId: string) => {
+    if (
+      !confirm(
+        "Are you sure you want to kill this conversation? The user will not be able to send new messages.",
+      )
+    ) {
+      return;
+    }
+
+    await killApi.execute(`/admin/api/conversations/${conversationId}/kill`, {
+      method: "POST",
+      credentials: "include",
+    });
+
+    if (killApi.data?.success) {
+      // Refresh conversations list and selected conversation
+      conversationsApi.execute("/admin/api/conversations", {
+        credentials: "include",
+      });
+      if (selectedId === conversationId) {
+        conversationDetailApi.execute(
+          `/admin/api/conversations/${conversationId}`,
+          {
+            credentials: "include",
+          },
+        );
+      }
+    }
+  };
+
+  const handleReactivateConversation = async (conversationId: string) => {
+    await reactivateApi.execute(
+      `/admin/api/conversations/${conversationId}/reactivate`,
+      {
+        method: "POST",
+        credentials: "include",
+      },
+    );
+
+    if (reactivateApi.data?.success) {
+      // Refresh conversations list and selected conversation
+      conversationsApi.execute("/admin/api/conversations", {
+        credentials: "include",
+      });
+      if (selectedId === conversationId) {
+        conversationDetailApi.execute(
+          `/admin/api/conversations/${conversationId}`,
+          {
+            credentials: "include",
+          },
+        );
+      }
+    }
+  };
 
   return (
     <BaseLayout>
@@ -158,9 +216,16 @@ export function AdminConversationsView() {
                       onClick={() => handleSelectConversation(conversation.id)}
                     >
                       <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-semibold text-black truncate">
-                          {conversation.customerName || "Anonymous"}
-                        </h3>
+                        <div className="flex items-center space-x-2">
+                          <h3 className="font-semibold text-black truncate">
+                            {conversation.customerName || "Anonymous"}
+                          </h3>
+                          {conversation.status === "killed" && (
+                            <span className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">
+                              KILLED
+                            </span>
+                          )}
+                        </div>
                         <span className="text-xs text-gray-500 ml-2">
                           {conversation.channel}
                         </span>
@@ -202,9 +267,22 @@ export function AdminConversationsView() {
                 <div className="p-4 border-b border-gray-300 bg-white">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h2 className="text-xl font-bold text-black">
-                        {selectedConversation.customerName || "Anonymous"}
-                      </h2>
+                      <div className="flex items-center space-x-3">
+                        <h2 className="text-xl font-bold text-black">
+                          {selectedConversation.customerName || "Anonymous"}
+                        </h2>
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded ${
+                            selectedConversation.status === "active"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {selectedConversation.status === "active"
+                            ? "ACTIVE"
+                            : "KILLED"}
+                        </span>
+                      </div>
                       <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
                         <span>Channel: {selectedConversation.channel}</span>
                         <span>
@@ -215,8 +293,57 @@ export function AdminConversationsView() {
                         </span>
                       </div>
                     </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex space-x-2">
+                      {selectedConversation.status === "active" ? (
+                        <button
+                          onClick={() =>
+                            handleKillConversation(selectedConversation.id)
+                          }
+                          disabled={killApi.isLoading}
+                          className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium border border-red-600"
+                        >
+                          {killApi.isLoading
+                            ? "Killing..."
+                            : "Kill Conversation"}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() =>
+                            handleReactivateConversation(
+                              selectedConversation.id,
+                            )
+                          }
+                          disabled={reactivateApi.isLoading}
+                          className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium border border-green-600"
+                        >
+                          {reactivateApi.isLoading
+                            ? "Reactivating..."
+                            : "Reactivate"}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
+
+                {/* Error Messages */}
+                {(killApi.error || reactivateApi.error) && (
+                  <div className="p-4 bg-red-50 border-b border-red-200">
+                    <div className="text-red-600">
+                      Error: {killApi.error || reactivateApi.error}
+                    </div>
+                  </div>
+                )}
+
+                {/* Success Messages */}
+                {(killApi.data?.success || reactivateApi.data?.success) && (
+                  <div className="p-4 bg-green-50 border-b border-green-200">
+                    <div className="text-green-600">
+                      {killApi.data?.message || reactivateApi.data?.message}
+                    </div>
+                  </div>
+                )}
 
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
@@ -227,37 +354,47 @@ export function AdminConversationsView() {
                       </div>
                     </div>
                   ) : (
-                    <div className="space-y-4 max-w-4xl mx-auto">
-                      {selectedConversation.messages.map((message) => (
-                        <div
-                          key={message.id}
-                          className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                        >
-                          <div
-                            className={`max-w-[70%] p-3 rounded-lg ${
-                              message.role === "user"
-                                ? "bg-blue-500 text-white"
-                                : "bg-white text-black border border-gray-300"
-                            }`}
-                          >
-                            <div className="mb-1">
-                              <div className="text-sm whitespace-pre-wrap">
-                                {message.message}
-                              </div>
-                            </div>
-                            <div
-                              className={`text-xs ${
-                                message.role === "user"
-                                  ? "text-blue-100"
-                                  : "text-gray-500"
-                              }`}
-                            >
-                              {formatMessageTime(message.createdAt)}
-                            </div>
+                    <>
+                      {selectedConversation.status === "killed" && (
+                        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+                          <div className="text-red-800 font-medium text-center">
+                            🚫 This conversation has been killed. The user
+                            cannot send new messages.
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      )}
+                      <div className="space-y-4 max-w-4xl mx-auto">
+                        {selectedConversation.messages.map((message) => (
+                          <div
+                            key={message.id}
+                            className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                          >
+                            <div
+                              className={`max-w-[70%] p-3 rounded-lg ${
+                                message.role === "user"
+                                  ? "bg-blue-500 text-white"
+                                  : "bg-white text-black border border-gray-300"
+                              }`}
+                            >
+                              <div className="mb-1">
+                                <div className="text-sm whitespace-pre-wrap">
+                                  {message.message}
+                                </div>
+                              </div>
+                              <div
+                                className={`text-xs ${
+                                  message.role === "user"
+                                    ? "text-blue-100"
+                                    : "text-gray-500"
+                                }`}
+                              >
+                                {formatMessageTime(message.createdAt)}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
                   )}
                 </div>
               </>

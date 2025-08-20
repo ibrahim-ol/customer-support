@@ -61,3 +61,11 @@ Content-Type: application/json
   "customerName": "John Doe Updated",
   "channel": "email"
 }
+
+
+### Kill conversation (admin)
+POST http://localhost:3000/admin/api/conversations/0198bf52-3b73-70ab-a355-24b4ecb345e4/kill
+
+
+### Reactivate conversation (admin)
+POST http://localhost:3000/admin/api/conversations/0198bf52-3b73-70ab-a355-24b4ecb345e4/reactivate
