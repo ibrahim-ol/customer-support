@@ -11,9 +11,6 @@ import { StartChatView } from "../../frontend/pages/new-chat.tsx";
 
 const router = new Hono();
 
-router.get("/test", async (c) => {
-  return c.html(<RenderClientView name="admin-chat" />);
-});
 /// # Chat view
 router.get("/new", async (c) => {
   return c.html(<StartChatView error={c.req.query("error")} />);
@@ -86,7 +83,7 @@ router.post(
     });
     const assistantReply = cleanReply(reply.text);
 
-    await ChatRepository.addChat({
+    const assistantMessage = await ChatRepository.addChat({
       conversationId,
       message: assistantReply,
       role: "assistant",
@@ -97,9 +94,8 @@ router.post(
     return c.json({
       message: "Sent",
       data: {
-        id: messageRes[0]?.id,
-        conversation_id: conversationId,
-        reply: assistantReply,
+        request: messageRes,
+        reply: assistantMessage,
       },
     });
   }),

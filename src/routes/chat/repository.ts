@@ -10,8 +10,9 @@ export const ChatRepository = {
       .where(eq(chat.conversationId, conversationId));
   },
 
-  addChat(args: typeof chat.$inferInsert) {
-    return db.insert(chat).values(args).returning({ id: chat.id });
+  async addChat(args: typeof chat.$inferInsert) {
+    const result = await db.insert(chat).values(args).returning();
+    return result[0];
   },
 
   async createConversation() {

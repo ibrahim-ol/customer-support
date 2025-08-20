@@ -94,14 +94,18 @@ interface Message {
   conversationId: string;
   createdAt: Date;
 }
-// Specialized hook for chat messages
+
+// Specialized hook for chat messages with optimistic updates
 export function useChatMessages(conversationId: string | null) {
   const fetchApi = useApi<{ data: Message[] }>();
-  const sendApi = useApi<{ data: Message }>();
+  const sendApi = useApi<{ data: { request: Message; reply: Message } }>();
+  const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([]);
 
   const fetchMessages = useCallback(
     async (conversationId: string) => {
       const result = await fetchApi.execute(`/chat/${conversationId}`);
+      // Clear optimistic messages when we get fresh data
+      setOptimisticMessages([]);
       return result?.data || [];
     },
     [fetchApi.execute],
@@ -109,19 +113,55 @@ export function useChatMessages(conversationId: string | null) {
 
   const sendMessage = useCallback(
     async (conversationId: string, message: string) => {
-      const result = await sendApi.execute("/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          conversation_id: conversationId,
-          message: message.trim(),
-        }),
-      });
-      return result;
+      const trimmedMessage = message.trim();
+      if (!trimmedMessage) return null;
+
+      // Create optimistic message with unique ID
+      const optimisticMessage: Message = {
+        id: `optimistic-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        message: trimmedMessage,
+        role: "user",
+        conversationId,
+        createdAt: new Date(),
+      };
+
+      // Add optimistic message immediately
+      setOptimisticMessages((prev) => [...prev, optimisticMessage]);
+
+      try {
+        const result = await sendApi.execute("/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            conversation_id: conversationId,
+            message: trimmedMessage,
+          }),
+        });
+        // Remove the optimistic message and refresh to get the real message + AI response
+        setOptimisticMessages((prev) =>
+          prev.filter((msg) => msg.id !== optimisticMessage.id),
+        );
+
+        if (result?.data) {
+          setOptimisticMessages((prev) => [
+            ...prev,
+            result.data.request,
+            result.data.reply,
+          ]);
+        }
+
+        return result;
+      } catch (error) {
+        // Remove optimistic message on error
+        setOptimisticMessages((prev) =>
+          prev.filter((msg) => msg.id !== optimisticMessage.id),
+        );
+        throw error;
+      }
     },
-    [sendApi.execute],
+    [sendApi.execute, fetchMessages],
   );
 
   // Load messages when conversation ID is available
@@ -131,9 +171,17 @@ export function useChatMessages(conversationId: string | null) {
     }
   }, [conversationId, fetchMessages]);
 
+  // Combine real messages with optimistic messages and sort by creation date
+  const allMessages = [
+    ...(fetchApi.data?.data || []),
+    ...optimisticMessages,
+  ].sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+  );
+
   return {
     messages: {
-      list: fetchApi.data?.data || [],
+      list: allMessages,
       isLoading: fetchApi.isLoading,
       error: fetchApi.error,
       refresh: fetchMessages,

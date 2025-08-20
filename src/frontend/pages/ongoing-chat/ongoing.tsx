@@ -26,12 +26,8 @@ export function OngoingChatView() {
     if (!conversationId || send.isSending) return;
 
     try {
-      // tODO: optimistic update, push the message into the messages list
-      await send.execute(conversationId, message);
-
-      // TODO the response from sendAPI has this
-      // Refresh messages to get the latest conversation including AI response
-      await messages.refresh(conversationId);
+      // Optimistic update is now handled in the hook
+      const { data } = await send.execute(conversationId, message);
     } catch (err) {
       console.error("Error sending message:", err);
     }
