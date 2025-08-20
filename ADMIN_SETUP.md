@@ -60,13 +60,15 @@ src/
 ### AdminLoginView
 - Clean login form with username/password fields
 - Error handling for invalid credentials and missing fields
-- Tailwind CSS styling consistent with app theme
+- Black and white theme matching the chat interface
+- Sharp borders and minimal styling consistent with app design
 
 ### AdminDashboardView
-- Overview dashboard with stats cards
-- Quick action buttons for common admin tasks
+- Overview dashboard with stats cards using black borders
+- Quick action buttons with hover effects
 - Recent activity section (placeholder)
-- Logout functionality
+- Header with logout functionality
+- Consistent black and white theme throughout
 
 ### Authentication Middleware
 - `requireAdminAuth`: Protects routes requiring admin access
@@ -137,7 +139,7 @@ Edit `src/frontend/pages/admin-dashboard.tsx` to add:
 **Styling issues**
 - Ensure Tailwind CSS is loaded
 - Check for conflicting styles
-- Verify color variables are defined
+- Verify black and white theme is applied consistently
 
 ### Debug Mode
 Add logging to see authentication flow:

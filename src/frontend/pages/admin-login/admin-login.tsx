@@ -6,25 +6,32 @@ export function AdminLoginView({ error }: { error?: string }) {
 
   return (
     <BaseLayout>
-      <div className="min-h-screen bg-off-white flex items-center justify-center">
-        <div className="max-w-md w-full space-y-8">
-          <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-charcoal">
-              Admin Login
-            </h2>
-            <p className="mt-2 text-center text-sm text-neutral">
-              Sign in to access the admin dashboard
-            </p>
-          </div>
-          <form
-            className="mt-8 space-y-6"
-            action="/admin/login"
-            method="post"
-            onSubmit={() => setSubmitted(true)}
-          >
-            <div className="rounded-md shadow-sm space-y-4">
+      <div className="flex flex-col h-screen bg-white">
+        <header className="text-black px-4 py-2 border-b border-black">
+          <h1 className="text-lg font-bold text-center">Admin Login</h1>
+        </header>
+        <main className="flex-1 flex items-center justify-center">
+          <div className="w-full max-w-md">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-black mb-2">
+                Welcome Back
+              </h2>
+              <p className="text-black text-sm">
+                Sign in to access the admin dashboard
+              </p>
+            </div>
+
+            <form
+              action="/admin/login"
+              method="post"
+              className="space-y-6"
+              onSubmit={() => setSubmitted(true)}
+            >
               <div>
-                <label htmlFor="username" className="sr-only">
+                <label
+                  htmlFor="username"
+                  className="block text-sm font-medium text-black mb-2"
+                >
                   Username
                 </label>
                 <input
@@ -32,12 +39,16 @@ export function AdminLoginView({ error }: { error?: string }) {
                   name="username"
                   type="text"
                   required
-                  className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-light-gray placeholder-neutral text-charcoal focus:outline-none focus:ring-accent focus:border-accent focus:z-10 sm:text-sm"
-                  placeholder="Username"
+                  className="w-full px-4 py-3 border border-black focus:outline-none text-black placeholder-gray-400"
+                  placeholder="Enter your username"
                 />
               </div>
+
               <div>
-                <label htmlFor="password" className="sr-only">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-black mb-2"
+                >
                   Password
                 </label>
                 <input
@@ -45,34 +56,33 @@ export function AdminLoginView({ error }: { error?: string }) {
                   name="password"
                   type="password"
                   required
-                  className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-light-gray placeholder-neutral text-charcoal focus:outline-none focus:ring-accent focus:border-accent focus:z-10 sm:text-sm"
-                  placeholder="Password"
+                  className="w-full px-4 py-3 border border-black focus:outline-none text-black placeholder-gray-400"
+                  placeholder="Enter your password"
                 />
               </div>
-            </div>
 
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                {error === "invalid_credentials" &&
-                  "Invalid username or password"}
-                {error === "missing_fields" && "Please fill in all fields"}
-                {error !== "invalid_credentials" &&
-                  error !== "missing_fields" &&
-                  error}
-              </div>
-            )}
+              {error && (
+                <div className="border border-black bg-white px-4 py-3 text-sm text-black">
+                  <strong>Error:</strong>{" "}
+                  {error === "invalid_credentials" &&
+                    "Invalid username or password"}
+                  {error === "missing_fields" && "Please fill in all fields"}
+                  {error !== "invalid_credentials" &&
+                    error !== "missing_fields" &&
+                    error}
+                </div>
+              )}
 
-            <div>
               <button
                 type="submit"
                 disabled={submitted}
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-accent hover:bg-accent-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                className="w-full bg-black text-white px-4 py-3 hover:bg-gray-800 disabled:opacity-50 transition-colors font-medium border border-black"
               >
-                {submitted ? "Signing in..." : "Sign in"}
+                {submitted ? "Signing in..." : "Sign In"}
               </button>
-            </div>
-          </form>
-        </div>
+            </form>
+          </div>
+        </main>
       </div>
     </BaseLayout>
   );
