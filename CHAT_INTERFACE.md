@@ -2,16 +2,18 @@
 
 ## Overview
 
-This chat interface provides a real-time messaging system for customer support interactions. It's built using Hono.js with a React-like frontend using Hono JSX.
+This chat interface provides a real-time messaging system for customer support interactions. It's built using Hono.js with a React-like frontend using Hono JSX. The interface features a modular component architecture with custom React hooks for API management.
 
 ## Features
 
+- **Full-Width Layout**: Chat interface occupies the complete available screen width
 - **Real-time Chat**: Send and receive messages in a conversation
 - **Message History**: View all previous messages in a conversation
 - **Auto-scroll**: Automatically scrolls to the latest message
 - **Typing Indicators**: Shows when the assistant is responding
 - **Error Handling**: Displays network and API errors with user-friendly messages
-- **Responsive Design**: Works on desktop and mobile devices
+- **Modular Components**: Clean separation of concerns with reusable components
+- **Custom Hooks**: React hooks for API state management
 - **Auto-expanding Input**: Text area grows as you type longer messages
 
 ## API Endpoints
@@ -66,25 +68,61 @@ Sends a new message to a conversation.
 }
 ```
 
-## Component Structure
+## Architecture
 
-### OngoingChatView
-The main chat component located at `/src/frontend/pages/ongoing-chat/ongoing.tsx`
+### Component Structure
 
-**Key Features:**
-- Fetches conversation ID from URL parameters
-- Loads message history on mount
-- Handles message sending with proper error handling
-- Auto-scrolls to new messages
-- Shows loading states and typing indicators
+The chat interface is built with modular components for better maintainability and reusability:
 
-**State Management:**
-- `messages`: Array of chat messages
-- `newMessage`: Current message being typed
-- `loading`: Loading state for fetching messages
-- `sending`: Loading state for sending messages
-- `error`: Error message display
-- `conversationId`: Current conversation ID
+#### Main Components
+
+**OngoingChatView** (`/src/frontend/pages/ongoing-chat/ongoing.tsx`)
+- Main container component that orchestrates the chat interface
+- Uses custom hooks for API management
+- Handles URL-based conversation ID extraction
+- Coordinates between child components
+
+**ChatHeader** (`/src/frontend/components/chat/ChatHeader.tsx`)
+- Displays conversation information
+- Shows refresh button and error messages
+- Handles error dismissal
+
+**MessagesList** (`/src/frontend/components/chat/MessagesList.tsx`)
+- Renders the conversation history
+- Handles auto-scrolling to new messages
+- Shows loading states and empty states
+- Includes typing indicators
+
+**MessageInput** (`/src/frontend/components/chat/MessageInput.tsx`)
+- Handles message input and sending
+- Auto-expanding textarea
+- Keyboard shortcuts (Enter to send, Shift+Enter for new line)
+- Send button with loading state
+
+**Individual Message Components:**
+- `ChatMessage`: Individual message bubble
+- `TypingIndicator`: Shows when assistant is responding
+- `LoadingIndicator`: Generic loading spinner
+- `EmptyState`: Shown when no messages exist
+
+### Custom Hooks
+
+**useApi** (`/src/frontend/hooks/useApi.tsx`)
+- Generic hook for API calls with loading, error, and data states
+- Provides `execute`, `reset`, and `setError` methods
+- Handles network errors and HTTP status codes
+
+**useChatMessages** (specialized hook)
+- Built on top of `useApi` for chat-specific operations
+- Provides `fetchMessages` and `sendMessage` functions
+- Manages chat messages array and loading states
+
+### State Management
+
+The application uses React hooks for state management:
+- `useChatMessages`: Handles messages, loading states, and API calls
+- Local component state for UI-specific state (typing indicators, form inputs)
+- URL parameters for conversation ID
 
 ## Usage
 
@@ -123,23 +161,48 @@ The interface handles several types of errors:
 
 All errors are displayed in a dismissible red banner at the top of the chat.
 
-## Technical Details
+### Technical Details
 
-### Data Flow
-1. Component mounts and extracts conversation ID from URL
-2. `fetchMessages()` is called to load conversation history
-3. Messages are displayed in chronological order
-4. User types message and submits form
-5. `sendMessage()` posts to API and refreshes message list
-6. Auto-scroll ensures latest message is visible
+#### Data Flow
+1. `OngoingChatView` mounts and extracts conversation ID from URL
+2. `useChatMessages` hook is initialized
+3. `fetchMessages()` is called automatically when conversation ID is available
+4. `MessagesList` component renders messages with auto-scroll
+5. User types in `MessageInput` and submits
+6. `handleSendMessage` calls the custom hook's `sendMessage` function
+7. Messages are refreshed to include AI response
+8. Components re-render with updated state
 
-### Performance Optimizations
-- Messages are fetched only once on mount
-- Auto-scroll uses `setTimeout` to ensure DOM updates complete
-- Text area auto-resizes to prevent layout shifts
-- Loading states prevent duplicate API calls
+#### Performance Optimizations
+- **Component Separation**: Smaller components reduce re-render scope
+- **Custom Hooks**: Centralized API logic prevents duplication
+- **Auto-scroll Optimization**: Uses `setTimeout` and `useRef` for smooth scrolling
+- **Loading States**: Prevent duplicate API calls and provide user feedback
+- **Full-Width Layout**: Maximizes screen real estate usage
 
-### Browser Compatibility
+#### File Structure
+```
+src/frontend/
+├── hooks/
+│   └── useApi.tsx           # Custom API hooks
+├── components/
+│   ├── chat-layout.tsx      # Main layout wrapper
+│   └── chat/                # Chat-specific components
+│       ├── index.tsx        # Component exports
+│       ├── ChatHeader.tsx   # Header with conversation info
+│       ├── ChatMessage.tsx  # Individual message component
+│       ├── MessagesList.tsx # Messages container with scroll
+│       ├── MessageInput.tsx # Input form with auto-expand
+│       ├── TypingIndicator.tsx  # Typing animation
+│       ├── LoadingIndicator.tsx # Loading spinner
+│       └── EmptyState.tsx   # Empty state message
+└── pages/
+    └── ongoing-chat/
+        └── ongoing.tsx      # Main chat page component
+```
+
+#### Browser Compatibility
 - Modern browsers with ES6+ support
-- Requires fetch API support
-- Uses CSS Grid and Flexbox for layout
+- Requires fetch API and React hooks support
+- Uses CSS Grid and Flexbox for responsive layout
+- Full-width design adapts to all screen sizes

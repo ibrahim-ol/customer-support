@@ -1,26 +1,18 @@
-import { useState, useEffect, useRef } from "hono/jsx";
+import { useState, useEffect } from "hono/jsx";
 import { ChatLayout } from "../../components/chat-layout.tsx";
-
-interface ChatMessage {
-  id: string;
-  message: string;
-  role: "user" | "assistant";
-  conversationId: string;
-  createdAt: Date;
-}
-
-interface ApiResponse {
-  data: ChatMessage[];
-}
+import { useChatMessages } from "../../hooks/useApi.tsx";
+import {
+  ChatHeader,
+  MessagesList,
+  MessageInput,
+} from "../../components/chat/index.tsx";
 
 export function OngoingChatView() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [newMessage, setNewMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [sending, setSending] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isSending, setIsSending] = useState(false);
+
+  const { messages, isLoading, error, fetchMessages, sendMessage, setError } =
+    useChatMessages();
 
   // Get conversation ID from URL
   useEffect(() => {
@@ -31,116 +23,49 @@ export function OngoingChatView() {
     }
   }, []);
 
-  // Fetch chat messages
-  const fetchMessages = async (convId: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await fetch(`/chat/${convId}`);
-
-      if (response.ok) {
-        const result: ApiResponse = await response.json();
-        setMessages(result.data);
-        // Auto-scroll to bottom after loading messages
-        setTimeout(() => scrollToBottom(), 100);
-      } else {
-        const errorData = await response.text();
-        setError(`Failed to fetch messages: ${response.status}`);
-        console.error("Fetch error:", errorData);
-      }
-    } catch (err) {
-      setError("Network error - could not fetch messages");
-      console.error("Error fetching messages:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Send new message
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !conversationId || sending) return;
-
-    const messageToSend = newMessage.trim();
-
-    try {
-      setSending(true);
-      setError(null);
-
-      const response = await fetch("/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          conversation_id: conversationId,
-          message: messageToSend,
-        }),
-      });
-
-      if (response.ok) {
-        // Clear the input immediately on successful send
-        setNewMessage("");
-        // Refresh messages to get the latest conversation
-        await fetchMessages(conversationId);
-      } else {
-        const errorData = await response.text();
-        setError(`Failed to send message: ${response.status}`);
-        console.error("Send error:", errorData);
-      }
-    } catch (err) {
-      setError("Network error - could not send message");
-      console.error("Error sending message:", err);
-    } finally {
-      setSending(false);
-    }
-  };
-
   // Load messages when conversation ID is available
   useEffect(() => {
     if (conversationId) {
       fetchMessages(conversationId);
     }
-  }, [conversationId]);
+  }, [conversationId, fetchMessages]);
 
-  // Auto-scroll to bottom function
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  // Handle message sending
+  const handleSendMessage = async (message: string) => {
+    if (!conversationId || isSending) return;
 
-  // Auto-scroll when messages change
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    try {
+      setIsSending(true);
+      setError(null);
 
-  // Handle form submission
-  const handleSubmit = (e: Event) => {
-    e.preventDefault();
-    sendMessage();
-  };
+      await sendMessage(conversationId, message);
 
-  // Handle Enter key press
-  const handleKeyPress = (e: KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+      // Refresh messages to get the latest conversation including AI response
+      await fetchMessages(conversationId);
+    } catch (err) {
+      setError("Failed to send message");
+      console.error("Error sending message:", err);
+    } finally {
+      setIsSending(false);
     }
   };
 
-  // Auto-expand textarea
-  const handleTextareaChange = (e: Event) => {
-    const target = e.target as HTMLTextAreaElement;
-    setNewMessage(target.value);
+  // Handle refresh
+  const handleRefresh = () => {
+    if (conversationId) {
+      fetchMessages(conversationId);
+    }
+  };
 
-    // Auto-resize textarea
-    target.style.height = "auto";
-    target.style.height = Math.min(target.scrollHeight, 120) + "px";
+  // Handle error dismissal
+  const handleErrorDismiss = () => {
+    setError(null);
   };
 
   if (!conversationId) {
     return (
       <ChatLayout>
-        <div className="flex h-full flex-1 justify-center items-center">
+        <div className="flex h-full w-full justify-center items-center">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-black">
               No conversation selected
@@ -162,142 +87,26 @@ export function OngoingChatView() {
 
   return (
     <ChatLayout>
-      <div className="flex flex-col h-full max-w-4xl mx-auto">
-        {/* Chat Header */}
-        <div className="bg-white border-b border-black p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-black">
-              Conversation: {conversationId.slice(0, 8)}...
-            </h2>
-            <button
-              onClick={() => fetchMessages(conversationId)}
-              disabled={loading}
-              className="text-black hover:text-gray-700 disabled:opacity-50"
-            >
-              ↻ Refresh
-            </button>
-          </div>
-          {error && (
-            <div className="mt-3 p-3 bg-white border border-black rounded-lg text-black text-sm flex items-center justify-between">
-              <span>{error}</span>
-              <button
-                onClick={() => setError(null)}
-                className="ml-2 text-black hover:text-gray-700 font-bold text-lg leading-none"
-              >
-                ×
-              </button>
-            </div>
-          )}
-        </div>
+      <div className="flex flex-col h-full w-full">
+        <ChatHeader
+          conversationId={conversationId}
+          onRefresh={handleRefresh}
+          isLoading={isLoading}
+          error={error}
+          onErrorDismiss={handleErrorDismiss}
+        />
 
-        {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
-          {loading && messages.length === 0 ? (
-            <div className="flex justify-center items-center h-full">
-              <div className="flex items-center space-x-2 text-black">
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-black border-t-transparent"></div>
-                <span>Loading messages...</span>
-              </div>
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="flex justify-center items-center h-full">
-              <div className="text-center text-black">
-                <div className="text-4xl mb-4">💬</div>
-                <p className="text-lg">No messages yet.</p>
-                <p className="text-sm mt-1">Start the conversation below!</p>
-              </div>
-            </div>
-          ) : (
-            messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${
-                  message.role === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
-                <div
-                  className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg shadow-sm ${
-                    message.role === "user"
-                      ? "bg-black text-white"
-                      : "bg-white text-black border border-black"
-                  }`}
-                >
-                  <div className="whitespace-pre-wrap break-words">
-                    {message.message}
-                  </div>
-                  <div
-                    className={`text-xs mt-2 ${
-                      message.role === "user"
-                        ? "text-gray-300"
-                        : "text-gray-600"
-                    }`}
-                  >
-                    {message.role === "user" ? "You" : "Assistant"} •{" "}
-                    {new Date(message.createdAt).toLocaleTimeString()}
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
+        <MessagesList
+          messages={messages}
+          isLoading={isLoading}
+          isSending={isSending}
+        />
 
-          {/* Sending indicator */}
-          {sending && (
-            <div className="flex justify-start">
-              <div className="bg-white text-black border border-black px-4 py-3 rounded-lg shadow-sm">
-                <div className="flex items-center space-x-2">
-                  <div className="animate-pulse">Assistant is typing...</div>
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-black rounded-full animate-bounce"></div>
-                    <div
-                      className="w-2 h-2 bg-black rounded-full animate-bounce"
-                      style="animation-delay: 0.1s"
-                    ></div>
-                    <div
-                      className="w-2 h-2 bg-black rounded-full animate-bounce"
-                      style="animation-delay: 0.2s"
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Invisible element to scroll to */}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Message Input */}
-        <div className="bg-white border-t border-black p-4">
-          <form onSubmit={handleSubmit} className="flex space-x-3">
-            <div className="flex-1">
-              <textarea
-                value={newMessage}
-                onChange={handleTextareaChange}
-                onKeyDown={handleKeyPress}
-                placeholder="Type your message..."
-                className="w-full resize-none border border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-black"
-                rows={1}
-                disabled={sending}
-                style={{ minHeight: "48px", maxHeight: "120px" }}
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={sending || !newMessage.trim()}
-              className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center space-x-2 min-w-[80px] justify-center"
-            >
-              {sending ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-              ) : (
-                <span>Send</span>
-              )}
-            </button>
-          </form>
-          <div className="mt-2 text-xs text-black flex justify-between">
-            <span>Press Enter to send, Shift+Enter for new line</span>
-            <span>{messages.length} messages</span>
-          </div>
-        </div>
+        <MessageInput
+          onSendMessage={handleSendMessage}
+          isDisabled={isSending}
+          messageCount={messages.length}
+        />
       </div>
     </ChatLayout>
   );
