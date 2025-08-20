@@ -1,5 +1,5 @@
 import { db } from "../db/index.ts";
-import { conversations, chat, aiSummary } from "../db/schema.ts";
+import { conversations, chat, aiSummary, product } from "../db/schema.ts";
 import { eq, desc, sql, count } from "drizzle-orm";
 
 export const AdminService = {
@@ -120,6 +120,95 @@ export const AdminService = {
       return true;
     } catch (error) {
       console.error("Error reactivating conversation:", error);
+      return false;
+    }
+  },
+
+  /**
+   * Get all products
+   */
+  async getProducts() {
+    return await db.select().from(product).orderBy(desc(product.createdAt));
+  },
+
+  /**
+   * Get a single product by ID
+   */
+  async getProductById(id: string) {
+    const result = await db
+      .select()
+      .from(product)
+      .where(eq(product.id, id))
+      .limit(1);
+
+    return result[0] || null;
+  },
+
+  /**
+   * Create a new product
+   */
+  async createProduct(data: {
+    name: string;
+    price: number;
+    description: string;
+  }) {
+    try {
+      const [newProduct] = await db
+        .insert(product)
+        .values({
+          name: data.name,
+          price: data.price,
+          description: data.description,
+        })
+        .returning();
+
+      return newProduct;
+    } catch (error) {
+      console.error("Error creating product:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update an existing product
+   */
+  async updateProduct(
+    id: string,
+    data: {
+      name: string;
+      price: number;
+      description: string;
+    },
+  ) {
+    try {
+      const [updatedProduct] = await db
+        .update(product)
+        .set({
+          name: data.name,
+          price: data.price,
+          description: data.description,
+          updatedAt: new Date(),
+        })
+        .where(eq(product.id, id))
+        .returning();
+
+      return updatedProduct;
+    } catch (error) {
+      console.error("Error updating product:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Delete a product
+   */
+  async deleteProduct(id: string): Promise<boolean> {
+    try {
+      await db.delete(product).where(eq(product.id, id));
+
+      return true;
+    } catch (error) {
+      console.error("Error deleting product:", error);
       return false;
     }
   },

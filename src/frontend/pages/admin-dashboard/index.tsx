@@ -100,9 +100,9 @@ export function AdminDashboardView() {
               <ContentCard>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <ActionCard
-                    title="Manage Users"
-                    icon="👥"
-                    onClick={() => console.log("Navigate to users")}
+                    title="Manage Products"
+                    icon="📦"
+                    href="/admin/products"
                   />
                   <ActionCard
                     title="View Conversations"

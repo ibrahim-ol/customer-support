@@ -69,3 +69,37 @@ POST http://localhost:3000/admin/api/conversations/0198bf52-3b73-70ab-a355-24b4e
 
 ### Reactivate conversation (admin)
 POST http://localhost:3000/admin/api/conversations/0198bf52-3b73-70ab-a355-24b4ecb345e4/reactivate
+
+
+### Get all products (admin)
+GET http://localhost:3000/admin/api/products
+
+
+### Get specific product (admin)
+GET http://localhost:3000/admin/api/products/PRODUCT_ID_HERE
+
+
+### Create new product (admin)
+POST http://localhost:3000/admin/api/products
+Content-Type: application/json
+
+{
+  "name": "Premium Support Package",
+  "price": 99.99,
+  "description": "24/7 premium customer support with dedicated account manager"
+}
+
+
+### Update product (admin)
+PUT http://localhost:3000/admin/api/products/PRODUCT_ID_HERE
+Content-Type: application/json
+
+{
+  "name": "Updated Premium Support Package",
+  "price": 129.99,
+  "description": "24/7 premium customer support with dedicated account manager and priority response"
+}
+
+
+### Delete product (admin)
+DELETE http://localhost:3000/admin/api/products/PRODUCT_ID_HERE

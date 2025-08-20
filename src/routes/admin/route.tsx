@@ -1,7 +1,5 @@
 import { Hono } from "hono";
 import { AdminLoginView } from "../../frontend/pages/admin-login/index.tsx";
-import { AdminDashboardView } from "../../frontend/pages/admin-dashboard/index.tsx";
-import { AdminConversationsView } from "../../frontend/pages/admin-conversations/index.tsx";
 
 import {
   requireAdminAuth,
@@ -56,6 +54,11 @@ router.get("/dashboard", requireAdminAuth, async (c) => {
 // Admin conversations
 router.get("/conversations", requireAdminAuth, async (c) => {
   return c.html(<RenderClientView name="admin-conversations" />);
+});
+
+// Admin products
+router.get("/products", requireAdminAuth, async (c) => {
+  return c.html(<RenderClientView name="admin-products" />);
 });
 
 // Admin logout
@@ -197,5 +200,217 @@ router.post(
     }
   },
 );
+
+// Product API Routes
+
+// Get all products
+router.get("/api/products", requireAdminAuth, async (c) => {
+  try {
+    const products = await AdminService.getProducts();
+    return c.json({
+      success: true,
+      data: products,
+    });
+  } catch (error) {
+    return c.json(
+      {
+        success: false,
+        error: "Failed to fetch products",
+      },
+      500,
+    );
+  }
+});
+
+// Get single product
+router.get("/api/products/:id", requireAdminAuth, async (c) => {
+  try {
+    const id = c.req.param("id");
+    const product = await AdminService.getProductById(id);
+
+    if (!product) {
+      return c.json(
+        {
+          success: false,
+          error: "Product not found",
+        },
+        404,
+      );
+    }
+
+    return c.json({
+      success: true,
+      data: product,
+    });
+  } catch (error) {
+    return c.json(
+      {
+        success: false,
+        error: "Failed to fetch product",
+      },
+      500,
+    );
+  }
+});
+
+// Create new product
+router.post("/api/products", requireAdminAuth, async (c) => {
+  try {
+    const body = await c.req.json();
+    const { name, price, description } = body;
+
+    // Validate required fields
+    if (!name || !price || !description) {
+      return c.json(
+        {
+          success: false,
+          error: "Name, price, and description are required",
+        },
+        400,
+      );
+    }
+
+    // Validate price is a number
+    if (typeof price !== "number" || price < 0) {
+      return c.json(
+        {
+          success: false,
+          error: "Price must be a positive number",
+        },
+        400,
+      );
+    }
+
+    const newProduct = await AdminService.createProduct({
+      name: name.trim(),
+      price,
+      description: description.trim(),
+    });
+
+    return c.json({
+      success: true,
+      data: newProduct,
+      message: "Product created successfully",
+    });
+  } catch (error) {
+    console.error("Error creating product:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Failed to create product",
+      },
+      500,
+    );
+  }
+});
+
+// Update product
+router.put("/api/products/:id", requireAdminAuth, async (c) => {
+  try {
+    const id = c.req.param("id");
+    const body = await c.req.json();
+    const { name, price, description } = body;
+
+    // Validate required fields
+    if (!name || !price || !description) {
+      return c.json(
+        {
+          success: false,
+          error: "Name, price, and description are required",
+        },
+        400,
+      );
+    }
+
+    // Validate price is a number
+    if (typeof price !== "number" || price < 0) {
+      return c.json(
+        {
+          success: false,
+          error: "Price must be a positive number",
+        },
+        400,
+      );
+    }
+
+    // Check if product exists
+    const existingProduct = await AdminService.getProductById(id);
+    if (!existingProduct) {
+      return c.json(
+        {
+          success: false,
+          error: "Product not found",
+        },
+        404,
+      );
+    }
+
+    const updatedProduct = await AdminService.updateProduct(id, {
+      name: name.trim(),
+      price,
+      description: description.trim(),
+    });
+
+    return c.json({
+      success: true,
+      data: updatedProduct,
+      message: "Product updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating product:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Failed to update product",
+      },
+      500,
+    );
+  }
+});
+
+// Delete product
+router.delete("/api/products/:id", requireAdminAuth, async (c) => {
+  try {
+    const id = c.req.param("id");
+
+    // Check if product exists
+    const existingProduct = await AdminService.getProductById(id);
+    if (!existingProduct) {
+      return c.json(
+        {
+          success: false,
+          error: "Product not found",
+        },
+        404,
+      );
+    }
+
+    const success = await AdminService.deleteProduct(id);
+
+    if (!success) {
+      return c.json(
+        {
+          success: false,
+          error: "Failed to delete product",
+        },
+        500,
+      );
+    }
+
+    return c.json({
+      success: true,
+      message: "Product deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Failed to delete product",
+      },
+      500,
+    );
+  }
+});
 
 export default router;

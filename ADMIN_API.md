@@ -315,12 +315,188 @@ curl -X POST "http://localhost:3000/admin/api/conversations/conv_123/reactivate"
 
 ```
 
+## Product Management Endpoints
+
+### 7. Get All Products
+
+Retrieve a list of all products.
+
+**Endpoint:** `GET /admin/api/products`
+
+**Example Request:**
+```
+GET /admin/api/products
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "prod_123",
+      "name": "Premium Support Package",
+      "price": 99.99,
+      "description": "24/7 premium customer support with dedicated account manager",
+      "createdAt": "2024-01-15T10:30:00Z",
+      "updatedAt": "2024-01-15T11:45:00Z"
+    }
+  ]
+}
+```
+
+### 8. Get Single Product
+
+Retrieve detailed information about a specific product.
+
+**Endpoint:** `GET /admin/api/products/:id`
+
+**Parameters:**
+- `id` (string): The product ID
+
+**Example Request:**
+```
+GET /admin/api/products/prod_123
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "prod_123",
+    "name": "Premium Support Package",
+    "price": 99.99,
+    "description": "24/7 premium customer support with dedicated account manager",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-01-15T11:45:00Z"
+  }
+}
+```
+
+### 9. Create Product
+
+Create a new product.
+
+**Endpoint:** `POST /admin/api/products`
+
+**Request Body:**
+```json
+{
+  "name": "New Product",
+  "price": 149.99,
+  "description": "Product description"
+}
+```
+
+**Validation Rules:**
+- `name`: Required, non-empty string
+- `price`: Required, positive number (>= 0)
+- `description`: Required, non-empty string
+
+**Example Request:**
+```
+POST /admin/api/products
+Content-Type: application/json
+
+{
+  "name": "Basic Support Package",
+  "price": 49.99,
+  "description": "Standard customer support during business hours"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "prod_456",
+    "name": "Basic Support Package",
+    "price": 49.99,
+    "description": "Standard customer support during business hours",
+    "createdAt": "2024-01-15T12:00:00Z",
+    "updatedAt": "2024-01-15T12:00:00Z"
+  },
+  "message": "Product created successfully"
+}
+```
+
+### 10. Update Product
+
+Update an existing product.
+
+**Endpoint:** `PUT /admin/api/products/:id`
+
+**Parameters:**
+- `id` (string): The product ID
+
+**Request Body:**
+```json
+{
+  "name": "Updated Product Name",
+  "price": 199.99,
+  "description": "Updated product description"
+}
+```
+
+**Example Request:**
+```
+PUT /admin/api/products/prod_123
+Content-Type: application/json
+
+{
+  "name": "Premium Support Package Plus",
+  "price": 129.99,
+  "description": "24/7 premium support with priority response and dedicated manager"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "prod_123",
+    "name": "Premium Support Package Plus",
+    "price": 129.99,
+    "description": "24/7 premium support with priority response and dedicated manager",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-01-15T13:00:00Z"
+  },
+  "message": "Product updated successfully"
+}
+```
+
+### 11. Delete Product
+
+Delete an existing product.
+
+**Endpoint:** `DELETE /admin/api/products/:id`
+
+**Parameters:**
+- `id` (string): The product ID
+
+**Example Request:**
+```
+DELETE /admin/api/products/prod_123
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Product deleted successfully"
+}
+```
+
 ## Security Considerations
 
 1. All endpoints require admin authentication
 2. Session cookies are HTTP-only and SameSite=Strict
 3. SQL injection protection through Drizzle ORM
-4. Input validation for conversation updates
+4. Input validation for conversation updates and product management
+5. Product input sanitization and validation
 
 ## Data Format
 
