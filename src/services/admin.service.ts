@@ -1,6 +1,13 @@
 import { db } from "../db/index.ts";
-import { conversations, chat, aiSummary, product } from "../db/schema.ts";
+import {
+  conversations,
+  chat,
+  aiSummary,
+  product,
+  moodTracking,
+} from "../db/schema.ts";
 import { eq, desc, sql, count } from "drizzle-orm";
+import { MoodCategory } from "../types/mood.ts";
 
 export const AdminService = {
   /**
@@ -14,6 +21,7 @@ export const AdminService = {
         customerName: conversations.customerName,
         channel: conversations.channel,
         status: conversations.status,
+        mood: conversations.mood,
         createdAt: conversations.createdAt,
         updatedAt: conversations.updatedAt,
         messageCount: sql<number>`count(${chat.id})`.as("messageCount"),
@@ -60,6 +68,12 @@ export const AdminService = {
     totalConversations: number;
     totalMessages: number;
     averageMessagesPerConversation: number;
+    moodStats: {
+      positiveCount: number;
+      negativeCount: number;
+      neutralCount: number;
+      totalMoodEntries: number;
+    };
   }> {
     // Total conversations
     const [{ totalConversations }] = await db
@@ -77,10 +91,221 @@ export const AdminService = {
         ? Math.round((totalMessages / totalConversations) * 100) / 100
         : 0;
 
+    // Mood statistics
+    const allMoodEntries = await db.select().from(moodTracking);
+
+    const positiveMoods: MoodCategory[] = ["happy", "satisfied", "excited"];
+    const negativeMoods: MoodCategory[] = [
+      "angry",
+      "frustrated",
+      "disappointed",
+    ];
+    const neutralMoods: MoodCategory[] = ["neutral", "confused"];
+
+    const positiveCount = allMoodEntries.filter((entry) =>
+      positiveMoods.includes(entry.mood),
+    ).length;
+
+    const negativeCount = allMoodEntries.filter((entry) =>
+      negativeMoods.includes(entry.mood),
+    ).length;
+
+    const neutralCount = allMoodEntries.filter((entry) =>
+      neutralMoods.includes(entry.mood),
+    ).length;
+
     return {
       totalConversations,
       totalMessages,
       averageMessagesPerConversation,
+      moodStats: {
+        positiveCount,
+        negativeCount,
+        neutralCount,
+        totalMoodEntries: allMoodEntries.length,
+      },
+    };
+  },
+
+  /**
+   * Get mood analytics for all conversations
+   */
+  async getMoodAnalytics(): Promise<{
+    overallMoodDistribution: Record<MoodCategory, number>;
+    totalMoodEntries: number;
+    sentimentBreakdown: {
+      positive: number;
+      negative: number;
+      neutral: number;
+    };
+    currentMoodDistribution: Record<MoodCategory, number>;
+    moodTrends: {
+      improving: number;
+      declining: number;
+      stable: number;
+    };
+  }> {
+    // Get all mood tracking entries
+    const allMoodEntries = await db
+      .select()
+      .from(moodTracking)
+      .orderBy(desc(moodTracking.createdAt));
+
+    // Get current mood distribution from conversations
+    const currentMoods = await db
+      .select({ mood: conversations.mood })
+      .from(conversations);
+
+    // Calculate overall mood distribution
+    const overallMoodDistribution: Record<MoodCategory, number> = {
+      happy: 0,
+      frustrated: 0,
+      confused: 0,
+      angry: 0,
+      satisfied: 0,
+      neutral: 0,
+      excited: 0,
+      disappointed: 0,
+    };
+
+    allMoodEntries.forEach((entry) => {
+      overallMoodDistribution[entry.mood]++;
+    });
+
+    // Calculate current mood distribution
+    const currentMoodDistribution: Record<MoodCategory, number> = {
+      happy: 0,
+      frustrated: 0,
+      confused: 0,
+      angry: 0,
+      satisfied: 0,
+      neutral: 0,
+      excited: 0,
+      disappointed: 0,
+    };
+
+    currentMoods.forEach((mood) => {
+      currentMoodDistribution[mood.mood]++;
+    });
+
+    // Sentiment breakdown
+    const positiveMoods: MoodCategory[] = ["happy", "satisfied", "excited"];
+    const negativeMoods: MoodCategory[] = [
+      "angry",
+      "frustrated",
+      "disappointed",
+    ];
+    const neutralMoods: MoodCategory[] = ["neutral", "confused"];
+
+    const sentimentBreakdown = {
+      positive: positiveMoods.reduce(
+        (sum, mood) => sum + overallMoodDistribution[mood],
+        0,
+      ),
+      negative: negativeMoods.reduce(
+        (sum, mood) => sum + overallMoodDistribution[mood],
+        0,
+      ),
+      neutral: neutralMoods.reduce(
+        (sum, mood) => sum + overallMoodDistribution[mood],
+        0,
+      ),
+    };
+
+    // Mood trends analysis (simple implementation)
+    const conversationMoodChanges = await db
+      .select({
+        conversationId: moodTracking.conversationId,
+        mood: moodTracking.mood,
+        createdAt: moodTracking.createdAt,
+      })
+      .from(moodTracking)
+      .orderBy(moodTracking.conversationId, moodTracking.createdAt);
+
+    let improving = 0;
+    let declining = 0;
+    let stable = 0;
+
+    // Group by conversation and analyze trends
+    const conversationGroups: Record<
+      string,
+      Array<{ mood: MoodCategory; createdAt: Date }>
+    > = {};
+    conversationMoodChanges.forEach((entry) => {
+      if (!conversationGroups[entry.conversationId]) {
+        conversationGroups[entry.conversationId] = [];
+      }
+      conversationGroups[entry.conversationId].push({
+        mood: entry.mood,
+        createdAt: entry.createdAt,
+      });
+    });
+
+    Object.values(conversationGroups).forEach((moodHistory) => {
+      if (moodHistory.length < 2) {
+        stable++;
+        return;
+      }
+
+      const firstMood = moodHistory[0].mood;
+      const lastMood = moodHistory[moodHistory.length - 1].mood;
+
+      const moodScore = (mood: MoodCategory): number => {
+        const scores: Record<MoodCategory, number> = {
+          angry: 1,
+          frustrated: 2,
+          disappointed: 3,
+          confused: 4,
+          neutral: 5,
+          happy: 6,
+          satisfied: 7,
+          excited: 8,
+        };
+        return scores[mood];
+      };
+
+      const scoreDiff = moodScore(lastMood) - moodScore(firstMood);
+      if (scoreDiff > 0) improving++;
+      else if (scoreDiff < 0) declining++;
+      else stable++;
+    });
+
+    return {
+      overallMoodDistribution,
+      totalMoodEntries: allMoodEntries.length,
+      sentimentBreakdown,
+      currentMoodDistribution,
+      moodTrends: {
+        improving,
+        declining,
+        stable,
+      },
+    };
+  },
+
+  /**
+   * Get mood analytics for a specific conversation
+   */
+  async getConversationMoodAnalytics(conversationId: string) {
+    const moodHistory = await db
+      .select()
+      .from(moodTracking)
+      .where(eq(moodTracking.conversationId, conversationId))
+      .orderBy(desc(moodTracking.createdAt));
+
+    const conversation = await db
+      .select({ mood: conversations.mood })
+      .from(conversations)
+      .where(eq(conversations.id, conversationId))
+      .limit(1);
+
+    return {
+      conversationId,
+      currentMood: conversation[0]?.mood || null,
+      moodHistory,
+      totalEntries: moodHistory.length,
+      moodChanged:
+        moodHistory.length > 1 && moodHistory[0]?.mood !== moodHistory[1]?.mood,
     };
   },
 

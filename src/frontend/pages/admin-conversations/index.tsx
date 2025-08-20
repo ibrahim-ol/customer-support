@@ -2,6 +2,7 @@ import { BaseLayout } from "../../../utils/view.tsx";
 import { useState, useEffect } from "hono/jsx";
 import { ContentCard } from "../../components/cards/index.tsx";
 import { useApi } from "../../hooks/useApi.ts";
+import { MoodCategory } from "../../../types/mood.ts";
 
 interface Message {
   id: string;
@@ -16,6 +17,7 @@ interface ConversationListItem {
   customerName: string;
   channel: string;
   status: "active" | "killed";
+  mood: MoodCategory;
   createdAt: string;
   updatedAt: string;
   messageCount: number;
@@ -82,6 +84,34 @@ export function AdminConversationsView() {
 
   const conversations = conversationsApi.data?.data || [];
   const selectedConversation = conversationDetailApi.data?.data;
+
+  const getMoodEmoji = (mood: MoodCategory): string => {
+    const emojis: Record<MoodCategory, string> = {
+      happy: "😊",
+      frustrated: "😤",
+      confused: "😕",
+      angry: "😠",
+      satisfied: "😌",
+      neutral: "😐",
+      excited: "🤩",
+      disappointed: "😞",
+    };
+    return emojis[mood];
+  };
+
+  const getMoodColor = (mood: MoodCategory): string => {
+    const colors: Record<MoodCategory, string> = {
+      happy: "text-green-600 bg-green-50",
+      frustrated: "text-orange-600 bg-orange-50",
+      confused: "text-yellow-600 bg-yellow-50",
+      angry: "text-red-600 bg-red-50",
+      satisfied: "text-blue-600 bg-blue-50",
+      neutral: "text-gray-600 bg-gray-50",
+      excited: "text-purple-600 bg-purple-50",
+      disappointed: "text-indigo-600 bg-indigo-50",
+    };
+    return colors[mood];
+  };
 
   const handleKillConversation = async (conversationId: string) => {
     if (
@@ -220,6 +250,14 @@ export function AdminConversationsView() {
                           <h3 className="font-semibold text-black truncate">
                             {conversation.customerName || "Anonymous"}
                           </h3>
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded border ${getMoodColor(
+                              conversation.mood,
+                            )}`}
+                            title={`Mood: ${conversation.mood}`}
+                          >
+                            {getMoodEmoji(conversation.mood)}
+                          </span>
                           {conversation.status === "killed" && (
                             <span className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">
                               KILLED
@@ -272,6 +310,15 @@ export function AdminConversationsView() {
                           {selectedConversation.customerName || "Anonymous"}
                         </h2>
                         <span
+                          className={`px-2 py-1 text-sm font-medium rounded border ${getMoodColor(
+                            selectedConversation.mood,
+                          )}`}
+                          title={`Current mood: ${selectedConversation.mood}`}
+                        >
+                          {getMoodEmoji(selectedConversation.mood)}{" "}
+                          {selectedConversation.mood}
+                        </span>
+                        <span
                           className={`px-2 py-1 text-xs font-medium rounded ${
                             selectedConversation.status === "active"
                               ? "bg-green-100 text-green-800"
@@ -291,6 +338,17 @@ export function AdminConversationsView() {
                         <span>
                           {selectedConversation.messages.length} messages
                         </span>
+                        <button
+                          className="text-blue-600 hover:text-blue-800 underline"
+                          onClick={() =>
+                            window.open(
+                              `/admin/conversations/${selectedConversation.id}/mood`,
+                              "_blank",
+                            )
+                          }
+                        >
+                          View Mood History
+                        </button>
                       </div>
                     </div>
 

@@ -5,8 +5,10 @@ import {
   ContentCard,
   EmptyState,
 } from "../../components/cards/index.tsx";
+import { MoodAnalytics } from "../../components/mood/MoodAnalytics.tsx";
 import { useApi } from "../../hooks/useApi.ts";
 import { useEffect } from "hono/jsx";
+import { MoodCategory } from "../../../types/mood.ts";
 
 interface StatsResponse {
   success: boolean;
@@ -14,20 +16,50 @@ interface StatsResponse {
     totalConversations: number;
     totalMessages: number;
     averageMessagesPerConversation: number;
+    moodStats: {
+      positiveCount: number;
+      negativeCount: number;
+      neutralCount: number;
+      totalMoodEntries: number;
+    };
+  };
+}
+
+interface MoodAnalyticsResponse {
+  success: boolean;
+  data: {
+    overallMoodDistribution: Record<MoodCategory, number>;
+    totalMoodEntries: number;
+    sentimentBreakdown: {
+      positive: number;
+      negative: number;
+      neutral: number;
+    };
+    currentMoodDistribution: Record<MoodCategory, number>;
+    moodTrends: {
+      improving: number;
+      declining: number;
+      stable: number;
+    };
   };
 }
 
 export function AdminDashboardView() {
   const statsApi = useApi<StatsResponse>();
+  const moodApi = useApi<MoodAnalyticsResponse>();
 
-  // Fetch stats on mount
+  // Fetch stats and mood analytics on mount
   useEffect(() => {
     statsApi.execute("/admin/api/stats", {
+      credentials: "include",
+    });
+    moodApi.execute("/admin/api/mood-analytics", {
       credentials: "include",
     });
   }, []);
 
   const stats = statsApi.data?.data;
+  const moodData = moodApi.data?.data;
 
   return (
     <BaseLayout>
@@ -82,15 +114,73 @@ export function AdminDashboardView() {
               />
             </div>
 
-            {statsApi.error && (
+            {/* Mood Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+              <StatsCard
+                title="Positive Sentiment"
+                value={
+                  statsApi.isLoading
+                    ? "Loading..."
+                    : stats?.moodStats?.positiveCount?.toString() || "--"
+                }
+                icon="😊"
+              />
+              <StatsCard
+                title="Negative Sentiment"
+                value={
+                  statsApi.isLoading
+                    ? "Loading..."
+                    : stats?.moodStats?.negativeCount?.toString() || "--"
+                }
+                icon="😠"
+              />
+              <StatsCard
+                title="Neutral Sentiment"
+                value={
+                  statsApi.isLoading
+                    ? "Loading..."
+                    : stats?.moodStats?.neutralCount?.toString() || "--"
+                }
+                icon="😐"
+              />
+              <StatsCard
+                title="Total Mood Entries"
+                value={
+                  statsApi.isLoading
+                    ? "Loading..."
+                    : stats?.moodStats?.totalMoodEntries?.toString() || "--"
+                }
+                icon="📈"
+              />
+            </div>
+
+            {(statsApi.error || moodApi.error) && (
               <div className="mb-8">
                 <div className="p-4 bg-red-50 border border-red-200 rounded-md">
                   <div className="text-red-600">
-                    Error loading statistics: {statsApi.error}
+                    {statsApi.error &&
+                      `Error loading statistics: ${statsApi.error}`}
+                    {statsApi.error && moodApi.error && " | "}
+                    {moodApi.error &&
+                      `Error loading mood analytics: ${moodApi.error}`}
                   </div>
                 </div>
               </div>
             )}
+
+            {/* Mood Analytics */}
+            <div className="mb-8">
+              <h2 className="text-lg font-bold text-black mb-4">
+                Customer Mood Analytics
+              </h2>
+              <ContentCard>
+                <MoodAnalytics
+                  data={moodData!}
+                  isLoading={moodApi.isLoading}
+                  error={moodApi.error || undefined}
+                />
+              </ContentCard>
+            </div>
 
             {/* Quick Actions */}
             <div className="mb-8">

@@ -61,6 +61,11 @@ router.get("/products", requireAdminAuth, async (c) => {
   return c.html(<RenderClientView name="admin-products" />);
 });
 
+// Conversation mood history page
+router.get("/conversations/:id/mood", requireAdminAuth, async (c) => {
+  return c.html(<RenderClientView name="conversation-mood-history" />);
+});
+
 // Admin logout
 router.get("/logout", async (c) => {
   clearAdminSession(c);
@@ -129,6 +134,48 @@ router.get("/api/stats", requireAdminAuth, async (c) => {
       {
         success: false,
         error: "Failed to fetch statistics",
+      },
+      500,
+    );
+  }
+});
+
+// Get mood analytics
+router.get("/api/mood-analytics", requireAdminAuth, async (c) => {
+  try {
+    const moodAnalytics = await AdminService.getMoodAnalytics();
+    return c.json({
+      success: true,
+      data: moodAnalytics,
+    });
+  } catch (error) {
+    console.error("Error fetching mood analytics:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Failed to fetch mood analytics",
+      },
+      500,
+    );
+  }
+});
+
+// Get mood analytics for specific conversation
+router.get("/api/conversations/:id/mood", requireAdminAuth, async (c) => {
+  try {
+    const id = c.req.param("id");
+    const moodAnalytics = await AdminService.getConversationMoodAnalytics(id);
+
+    return c.json({
+      success: true,
+      data: moodAnalytics,
+    });
+  } catch (error) {
+    console.error("Error fetching conversation mood analytics:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Failed to fetch conversation mood analytics",
       },
       500,
     );
