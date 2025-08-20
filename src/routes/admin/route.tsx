@@ -1,12 +1,13 @@
 import { Hono } from "hono";
-import { AdminLoginView } from "../../frontend/pages/admin-login/admin-login.tsx";
-import { AdminDashboardView } from "../../frontend/pages/admin-dashboard.tsx";
+import { AdminLoginView } from "../../frontend/pages/admin-login/index.tsx";
+import { AdminDashboardView } from "../../frontend/pages/admin-dashboard/index.tsx";
 
 import {
   requireAdminAuth,
   setAdminSession,
   clearAdminSession,
 } from "../../middleware/auth.ts";
+import { AdminService } from "../../services/admin.service.ts";
 
 const router = new Hono();
 
@@ -54,6 +55,74 @@ router.get("/dashboard", requireAdminAuth, async (c) => {
 router.get("/logout", async (c) => {
   clearAdminSession(c);
   return c.redirect("/admin/login");
+});
+
+// API Routes for conversation management
+router.get("/api/conversations", requireAdminAuth, async (c) => {
+  try {
+    const conversations = await AdminService.getConversations();
+    return c.json({
+      success: true,
+      data: conversations,
+    });
+  } catch (error) {
+    return c.json(
+      {
+        success: false,
+        error: "Failed to fetch conversations",
+      },
+      500,
+    );
+  }
+});
+
+router.get("/api/conversations/:id", requireAdminAuth, async (c) => {
+  try {
+    const id = c.req.param("id");
+    const conversation = await AdminService.getConversationDetails(id);
+
+    if (!conversation) {
+      return c.json(
+        {
+          success: false,
+          error: "Conversation not found",
+        },
+        404,
+      );
+    }
+
+    return c.json({
+      success: true,
+      data: conversation,
+    });
+  } catch (error) {
+    return c.json(
+      {
+        success: false,
+        error: "Failed to fetch conversation details",
+      },
+      500,
+    );
+  }
+});
+
+router.get("/api/stats", requireAdminAuth, async (c) => {
+  try {
+    const stats = await AdminService.getConversationStats();
+    return c.json({
+      success: true,
+      data: stats,
+    });
+  } catch (error) {
+    console.error("Error fetching stats:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Failed to fetch statistics",
+      },
+      500,
+    );
+  }
 });
 
 export default router;

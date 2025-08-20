@@ -28,3 +28,36 @@ GET http://localhost:3000/chat/0198bf52-3b73-70ab-a355-24b4ecb345e4
 
 ### Fetch all chats
 GET http://localhost:3000/chat
+
+
+### Admin Login (you need to be authenticated first)
+POST http://localhost:3000/admin/login
+Content-Type: application/x-www-form-urlencoded
+
+username=admin&password=admin123
+
+
+### Get all conversations (admin)
+GET http://localhost:3000/admin/api/conversations
+
+
+### Get all conversations (admin)
+GET http://localhost:3000/admin/api/conversations
+
+
+### Get specific conversation details (admin)
+GET http://localhost:3000/admin/api/conversations/0198bf52-3b73-70ab-a355-24b4ecb345e4
+
+
+### Get conversation statistics (admin)
+GET http://localhost:3000/admin/api/stats
+
+
+### Update conversation (admin)
+PUT http://localhost:3000/admin/api/conversations/0198bf52-3b73-70ab-a355-24b4ecb345e4
+Content-Type: application/json
+
+{
+  "customerName": "John Doe Updated",
+  "channel": "email"
+}

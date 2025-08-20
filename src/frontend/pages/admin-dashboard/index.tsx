@@ -1,10 +1,10 @@
-import { BaseLayout } from "../../utils/view.tsx";
+import { BaseLayout } from "../../../utils/view.tsx";
 import {
   StatsCard,
   ActionCard,
   ContentCard,
   EmptyState,
-} from "../components/cards/index.tsx";
+} from "../../components/cards/index.tsx";
 
 export function AdminDashboardView() {
   return (
