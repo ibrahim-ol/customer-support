@@ -15,7 +15,7 @@ router.get("/test", async (c) => {
   return c.html(<RenderClientView name="admin-chat" />);
 });
 /// # Chat view
-router.get("/view", async (c) => {
+router.get("/new", async (c) => {
   return c.html(<StartChatView error={c.req.query("error")} />);
 });
 router.get("/view/:conversationId", async (c) => {
