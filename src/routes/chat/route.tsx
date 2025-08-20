@@ -4,7 +4,12 @@ import { db } from "../../db/index.ts";
 import { conversations } from "../../db/schema.ts";
 import { chatSchema } from "./schema.ts";
 import { validateReqBody } from "../../utils/index.ts";
-import { cleanReply, generateReply } from "../../services/ai.service.ts";
+import {
+  cleanReply,
+  generateReply,
+  generateSummary,
+  classifyMood,
+} from "../../services/ai.service.ts";
 import { ChatRepository } from "./repository.ts";
 import { RenderClientView } from "../../utils/view.tsx";
 import { StartChatView } from "../../frontend/pages/new-chat.tsx";
@@ -29,10 +34,15 @@ router.post("/new", async (c) => {
 
   const conversation = await ChatRepository.createConversation();
 
-  await ChatRepository.addChat({
+  const messageRes = await ChatRepository.addChat({
     message,
     role: "user",
     conversationId: conversation.id,
+  });
+
+  // Classify user mood before generating reply
+  const userMood = await classifyMood({
+    chatHistory: [{ message, role: "user" }],
   });
 
   const reply = await generateReply({
@@ -46,7 +56,32 @@ router.post("/new", async (c) => {
     message: assistantReply,
     role: "assistant",
   });
-  // TODO fire and forget summarize and mood evaluator
+
+  // Generate summary after assistant reply
+  const summary = await generateSummary({
+    chatHistory: [
+      { message, role: "user" },
+      { message: assistantReply, role: "assistant" },
+    ],
+  });
+
+  // Save mood to both conversation table and mood tracking table
+  await Promise.all([
+    ChatRepository.updateConversationMood({
+      conversationId: conversation.id,
+      mood: userMood,
+    }),
+    ChatRepository.saveMoodTracking({
+      conversationId: conversation.id,
+      mood: userMood,
+      messageId: messageRes.id,
+    }),
+  ]);
+
+  await ChatRepository.saveSummary({
+    conversationId: conversation.id,
+    summary,
+  });
   return c.redirect(`/chat/view/${conversation.id}`);
 });
 
@@ -87,6 +122,11 @@ router.post(
     const chatHistory =
       await ChatRepository.getConversationChats(conversationId);
 
+    // Classify user mood before generating reply
+    const userMood = await classifyMood({
+      chatHistory: [...chatHistory, { message, role: "user" }],
+    });
+
     // generate ai response here
     const reply = await generateReply({
       chatHistory: chatHistory,
@@ -100,7 +140,38 @@ router.post(
       role: "assistant",
     });
 
-    // TODO generate current summary if needed
+    // Generate summary after assistant reply
+    const updatedChatHistory = [
+      ...chatHistory,
+      { message, role: "user" as const },
+      { message: assistantReply, role: "assistant" as const },
+    ];
+
+    // Get existing summary to update it
+    const existingSummary =
+      await ChatRepository.getLatestSummary(conversationId);
+    const summary = await generateSummary({
+      chatHistory: updatedChatHistory,
+      previousSummary: existingSummary?.summary,
+    });
+
+    // Save mood to both conversation table and mood tracking table
+    await Promise.all([
+      ChatRepository.updateConversationMood({
+        conversationId,
+        mood: userMood,
+      }),
+      ChatRepository.saveMoodTracking({
+        conversationId,
+        mood: userMood,
+        messageId: messageRes.id,
+      }),
+    ]);
+
+    await ChatRepository.updateSummary({
+      conversationId,
+      summary,
+    });
 
     return c.json({
       message: "Sent",
@@ -127,6 +198,63 @@ router.get("/:conversationId", async (c) => {
   const result = await ChatRepository.getConversationChats(conversationId);
 
   return c.json({ data: result });
+});
+
+/// # GET conversation analytics (mood and summary)
+router.get("/:conversationId/analytics", async (c) => {
+  const conversationId = c.req.param("conversationId");
+  const parsedId = z.string().uuid().safeParse(conversationId);
+  if (!parsedId.success) {
+    return c.json({ error: "Invalid conversation id" }, 400);
+  }
+
+  const [conversation, summary, moodAnalytics] = await Promise.all([
+    ChatRepository.findConversationById(conversationId),
+    ChatRepository.getLatestSummary(conversationId),
+    ChatRepository.getMoodAnalytics(conversationId),
+  ]);
+
+  if (!conversation) {
+    return c.json({ error: "Conversation not found" }, 404);
+  }
+
+  return c.json({
+    data: {
+      conversationId,
+      summary: summary?.summary || null,
+      currentMood: conversation.mood,
+      analytics: moodAnalytics,
+    },
+  });
+});
+
+/// # GET detailed mood history
+router.get("/:conversationId/mood-history", async (c) => {
+  const conversationId = c.req.param("conversationId");
+  const parsedId = z.string().uuid().safeParse(conversationId);
+  if (!parsedId.success) {
+    return c.json({ error: "Invalid conversation id" }, 400);
+  }
+
+  const moodHistory = await ChatRepository.getMoodHistory(conversationId);
+
+  if (moodHistory.length === 0) {
+    return c.json({
+      data: {
+        conversationId,
+        moodHistory: [],
+        totalEntries: 0,
+      },
+    });
+  }
+
+  return c.json({
+    data: {
+      conversationId,
+      moodHistory,
+      totalEntries: moodHistory.length,
+    },
+  });
 });
 
 export default router;

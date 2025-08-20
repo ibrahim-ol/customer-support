@@ -18,6 +18,20 @@ export const conversations = sqliteTable("conversations", {
   status: text("status", { enum: ["active", "killed"] })
     .notNull()
     .default("active"),
+  mood: text("mood", {
+    enum: [
+      "happy",
+      "frustrated",
+      "confused",
+      "angry",
+      "satisfied",
+      "neutral",
+      "excited",
+      "disappointed",
+    ],
+  })
+    .notNull()
+    .default("neutral"),
   ...timestamps,
 });
 export const chat = sqliteTable("chat", {
@@ -45,5 +59,28 @@ export const aiSummary = sqliteTable("ai_summary", {
     .notNull()
     .references(() => conversations.id, { onDelete: "cascade" }),
   summary: text("summary").notNull(),
+  ...timestamps,
+});
+
+export const moodTracking = sqliteTable("mood_tracking", {
+  id: text("id").primaryKey().$defaultFn(dbId),
+  conversationId: text("conversation_id")
+    .notNull()
+    .references(() => conversations.id, { onDelete: "cascade" }),
+  mood: text("mood", {
+    enum: [
+      "happy",
+      "frustrated",
+      "confused",
+      "angry",
+      "satisfied",
+      "neutral",
+      "excited",
+      "disappointed",
+    ],
+  }).notNull(),
+  messageId: text("message_id").references(() => chat.id, {
+    onDelete: "cascade",
+  }),
   ...timestamps,
 });
