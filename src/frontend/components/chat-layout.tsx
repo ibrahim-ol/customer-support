@@ -8,10 +8,10 @@ export function ChatLayout({ children }: PropsWithChildren) {
         <h1 className="text-2xl font-bold text-center">{Constants.APP_NAME}</h1>
       </header>
       <main className="flex-1 overflow-y-auto">{children}</main>
-      <footer className="bg-black text-white py-1 px-4 text-sm flex justify-between">
+      {/*<footer className="bg-black text-white py-1 px-4 text-sm flex justify-between">
         <p>Powered by Hono</p>
         <p>Written by Lere</p>
-      </footer>
+      </footer>*/}
     </div>
   );
 }

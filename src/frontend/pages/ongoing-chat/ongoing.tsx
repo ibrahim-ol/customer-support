@@ -9,10 +9,8 @@ import {
 
 export function OngoingChatView() {
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [isSending, setIsSending] = useState(false);
 
-  const { messages, isLoading, error, fetchMessages, sendMessage, setError } =
-    useChatMessages();
+  const { messages, send } = useChatMessages(conversationId);
 
   // Get conversation ID from URL
   useEffect(() => {
@@ -23,43 +21,32 @@ export function OngoingChatView() {
     }
   }, []);
 
-  // Load messages when conversation ID is available
-  useEffect(() => {
-    if (conversationId) {
-      fetchMessages(conversationId);
-    }
-  }, [conversationId, fetchMessages]);
-
   // Handle message sending
   const handleSendMessage = async (message: string) => {
-    if (!conversationId || isSending) return;
+    if (!conversationId || send.isSending) return;
 
     try {
-      setIsSending(true);
-      setError(null);
+      await send.execute(conversationId, message);
 
-      await sendMessage(conversationId, message);
-
+      // TODO the response from sendAPI has this
       // Refresh messages to get the latest conversation including AI response
-      await fetchMessages(conversationId);
+      await messages.refresh(conversationId);
     } catch (err) {
-      setError("Failed to send message");
       console.error("Error sending message:", err);
-    } finally {
-      setIsSending(false);
     }
   };
 
   // Handle refresh
   const handleRefresh = () => {
     if (conversationId) {
-      fetchMessages(conversationId);
+      messages.refresh(conversationId);
     }
   };
 
   // Handle error dismissal
   const handleErrorDismiss = () => {
-    setError(null);
+    messages.setError(null);
+    send.setError(null);
   };
 
   if (!conversationId) {
@@ -91,21 +78,21 @@ export function OngoingChatView() {
         <ChatHeader
           conversationId={conversationId}
           onRefresh={handleRefresh}
-          isLoading={isLoading}
-          error={error}
+          isLoading={messages.isLoading}
+          error={messages.error}
           onErrorDismiss={handleErrorDismiss}
         />
 
         <MessagesList
-          messages={messages}
-          isLoading={isLoading}
-          isSending={isSending}
+          messages={messages.list}
+          isLoading={messages.isLoading}
+          isSending={send.isSending}
         />
 
         <MessageInput
           onSendMessage={handleSendMessage}
-          isDisabled={isSending}
-          messageCount={messages.length}
+          isDisabled={send.isSending}
+          messageCount={messages.list.length}
         />
       </div>
     </ChatLayout>
