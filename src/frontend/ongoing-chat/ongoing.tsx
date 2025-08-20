@@ -1,16 +1,11 @@
-"use client";
 import { useEffect, useState } from "hono/jsx";
-import { ChatLayout } from "./layout.tsx";
-import { chat } from "../../../db/schema.ts";
-export function OngoingChatView({
-  messages: _message,
-}: {
-  messages: (typeof chat.$inferSelect)[];
-}) {
-  const [messages, setMessages] = useState(_message);
-  useEffect(() => {
-    console.log("Rendering ", { messages });
-  }, []);
+import { ChatLayout } from "../components/chat-layout.tsx";
+
+export function OngoingChatView() {
+  const [messages, setMessages] = useState<string[]>([]);
+  const addMessage = (message: string) => {
+    setMessages((m) => [...messages, message]);
+  };
   return (
     <ChatLayout>
       <div className="flex h-full flex-1 justify-center items-center flex-col">
@@ -19,6 +14,7 @@ export function OngoingChatView({
           You are currently chatting with someone.
         </p>
         <p>There are {messages.length} messages.</p>
+        <button onClick={() => addMessage("Hello!")}>Add message</button>
       </div>
     </ChatLayout>
   );

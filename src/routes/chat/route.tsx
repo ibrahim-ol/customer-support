@@ -8,20 +8,19 @@ import { validateReqBody } from "../../utils/index.ts";
 import { cleanReply, generateReply } from "../../services/ai.service.ts";
 import { ChatRepository } from "./repository.ts";
 import { StartChatView } from "./views/index.tsx";
-import { OngoingChatView } from "./views/ongoing.tsx";
+import { RenderClientView } from "../../utils/view.tsx";
 
 const router = new Hono();
 
+router.get("/test", async (c) => {
+  return c.html(<RenderClientView name="ongoing-chat" />);
+});
 /// # Chat view
 router.get("/view", async (c) => {
   return c.html(<StartChatView error={c.req.query("error")} />);
 });
 router.get("/view/:conversationId", async (c) => {
-  const conversationId = c.req.param("conversationId");
-
-  const messages = await ChatRepository.getConversationChats(conversationId);
-  if (!messages || messages.length === 0) return c.notFound();
-  return c.html(<OngoingChatView messages={messages} />);
+  return c.html(<RenderClientView name="ongoing-chat" />);
 });
 
 router.post("/new", async (c) => {

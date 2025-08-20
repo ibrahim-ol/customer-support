@@ -1,8 +1,13 @@
 import { PropsWithChildren, type FC } from "hono/jsx";
-import { Config } from "./config.ts";
 import { html } from "hono/html";
+import { render } from "hono/jsx/dom";
+import { Constants } from "./constants.ts";
 
-export function BaseLayout(props: PropsWithChildren) {
+export function BaseLayout(props: PropsWithChildren<{ scriptName?: string }>) {
+  const script = props.scriptName
+    ? html`<div id="root"></div>
+        <script src="/static/fe/${props.scriptName}.js"></script>`
+    : "";
   return html`
     <html lang="en">
       <head>
@@ -26,11 +31,20 @@ export function BaseLayout(props: PropsWithChildren) {
             --color-accent-light: #67e8f9; /* Light accent – subtle highlights, gradient blends */
           }
         </style>
-        <title>${Config.APP_NAME}</title>
+        <title>${Constants.APP_NAME}</title>
       </head>
       <body>
-        ${props.children}
+        ${props.children} ${script}
       </body>
     </html>
   `;
+}
+
+export function RenderClientView({ name }: { name: string }) {
+  return <BaseLayout scriptName={name} />;
+}
+
+export function setupView(App: FC) {
+  const root = document.getElementById("root");
+  render(<App />, root!);
 }

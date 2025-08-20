@@ -31,3 +31,6 @@ lerna-debug.log*
 .pnp.cjs
 sqlite.db
 .parcel-cache
+
+# frontend
+static/fe/*

@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import chatRouter from "./routes/chat/route.tsx";
 import { logger } from "hono/logger";
+import { serveStatic } from "@hono/node-server/serve-static";
 
 const app = new Hono();
 
@@ -10,6 +11,7 @@ app.use(logger());
 app.get("/", (c) => {
   return c.redirect("/chat/view");
 });
+app.use("/static/fe/*", serveStatic({ root: "./" }));
 
 app.route("/chat", chatRouter);
 
