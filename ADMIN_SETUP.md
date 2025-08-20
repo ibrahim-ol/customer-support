@@ -64,10 +64,11 @@ src/
 - Sharp borders and minimal styling consistent with app design
 
 ### AdminDashboardView
-- Overview dashboard with stats cards using black borders
-- Quick action buttons with hover effects
-- Recent activity section (placeholder)
-- Header with logout functionality
+- Clean dashboard with reusable card components
+- Stats cards for key metrics display
+- Action cards for navigation and management tasks
+- Content cards for organized sections
+- Empty states with helpful messaging
 - Consistent black and white theme throughout
 
 ### Authentication Middleware
@@ -105,11 +106,13 @@ src/
 3. Add corresponding frontend components as needed
 
 ### Customizing Dashboard
-Edit `src/frontend/pages/admin-dashboard.tsx` to add:
-- New stat cards
-- Additional quick actions
-- Real data integration
-- New admin features
+The dashboard uses reusable card components from `src/frontend/components/cards/`:
+- `StatsCard` for metrics display
+- `ActionCard` for interactive actions
+- `ContentCard` for content sections
+- `EmptyState` for no-data scenarios
+
+Edit `src/frontend/pages/admin-dashboard.tsx` to customize the layout and add new features.
 
 ## Future Enhancements
 

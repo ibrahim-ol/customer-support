@@ -306,11 +306,10 @@ The main admin dashboard uses all card types:
 - ContentCard for content sections  
 - EmptyState for empty activity feed
 
-### Enhanced Dashboard
-Shows advanced usage patterns:
-- Multi-row stats with different data
-- Complex action grids with descriptions
-- Two-column layouts with ContentCard
-- Mixed content types within cards
+The dashboard demonstrates various usage patterns:
+- Multi-metric stats display
+- Action grids with navigation
+- Content sections with headers
+- Empty states with helpful messaging
 
 This card system ensures consistent UI patterns while maintaining flexibility for different use cases across the admin interface.

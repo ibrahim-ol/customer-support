@@ -29,33 +29,6 @@ export function AdminDashboardView() {
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto">
-            {/* Dashboard Navigation */}
-            <div className="mb-6">
-              <ContentCard>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-bold text-black">
-                      Dashboard View
-                    </h3>
-                    <p className="text-xs text-black">
-                      Switch between dashboard layouts
-                    </p>
-                  </div>
-                  <div className="flex space-x-2">
-                    <span className="bg-black text-white px-3 py-1 text-xs font-medium">
-                      Standard
-                    </span>
-                    <a
-                      href="/admin/dashboard/enhanced"
-                      className="bg-white text-black px-3 py-1 border border-black hover:bg-gray-50 transition-colors text-xs font-medium"
-                    >
-                      Enhanced
-                    </a>
-                  </div>
-                </div>
-              </ContentCard>
-            </div>
-
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <StatsCard title="Total Conversations" value="--" icon="💬" />
