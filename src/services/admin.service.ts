@@ -14,7 +14,7 @@ export const AdminService = {
    * Get list of conversations with metadata
    */
   async getConversations() {
-    // Get conversations with stats
+    // Get conversations with stats and summary preview
     const results = await db
       .select({
         id: conversations.id,
@@ -33,7 +33,29 @@ export const AdminService = {
       .groupBy(conversations.id)
       .orderBy(desc(conversations.updatedAt));
 
-    return results;
+    // Get summary previews for each conversation
+    const conversationsWithSummary = await Promise.all(
+      results.map(async (conversation) => {
+        const summaryResult = await db
+          .select({ summary: aiSummary.summary })
+          .from(aiSummary)
+          .where(eq(aiSummary.conversationId, conversation.id))
+          .orderBy(desc(aiSummary.updatedAt))
+          .limit(1);
+
+        const summaryPreview = summaryResult[0]?.summary
+          ? summaryResult[0].summary.substring(0, 100) +
+            (summaryResult[0].summary.length > 100 ? "..." : "")
+          : "";
+
+        return {
+          ...conversation,
+          summaryPreview,
+        };
+      }),
+    );
+
+    return conversationsWithSummary;
   },
 
   /**
@@ -54,10 +76,20 @@ export const AdminService = {
       .where(eq(chat.conversationId, id))
       .orderBy(chat.createdAt);
 
+    // Get the latest summary for this conversation
+    const summaryResult = await db
+      .select()
+      .from(aiSummary)
+      .where(eq(aiSummary.conversationId, id))
+      .orderBy(desc(aiSummary.updatedAt))
+      .limit(1);
+
+    const summary = summaryResult[0]?.summary || "";
+
     return {
       ...conversation[0],
       messages,
-      summary: "",
+      summary,
     };
   },
 
@@ -435,6 +467,35 @@ export const AdminService = {
     } catch (error) {
       console.error("Error deleting product:", error);
       return false;
+    }
+  },
+
+  /**
+   * Get recent conversation summaries for dashboard
+   */
+  async getRecentConversationSummaries(limit: number = 5) {
+    try {
+      const results = await db
+        .select({
+          id: conversations.id,
+          customerName: conversations.customerName,
+          channel: conversations.channel,
+          mood: conversations.mood,
+          status: conversations.status,
+          createdAt: conversations.createdAt,
+          updatedAt: conversations.updatedAt,
+          summary: aiSummary.summary,
+          summaryUpdatedAt: aiSummary.updatedAt,
+        })
+        .from(conversations)
+        .innerJoin(aiSummary, eq(conversations.id, aiSummary.conversationId))
+        .orderBy(desc(aiSummary.updatedAt))
+        .limit(limit);
+
+      return results;
+    } catch (error) {
+      console.error("Error fetching recent summaries:", error);
+      return [];
     }
   },
 };

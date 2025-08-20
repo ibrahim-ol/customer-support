@@ -160,6 +160,27 @@ router.get("/api/mood-analytics", requireAdminAuth, async (c) => {
   }
 });
 
+// Get recent conversation summaries
+router.get("/api/recent-summaries", requireAdminAuth, async (c) => {
+  try {
+    const limit = parseInt(c.req.query("limit") || "5");
+    const summaries = await AdminService.getRecentConversationSummaries(limit);
+    return c.json({
+      success: true,
+      data: summaries,
+    });
+  } catch (error) {
+    console.error("Error fetching recent summaries:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Failed to fetch recent summaries",
+      },
+      500,
+    );
+  }
+});
+
 // Get mood analytics for specific conversation
 router.get("/api/conversations/:id/mood", requireAdminAuth, async (c) => {
   try {

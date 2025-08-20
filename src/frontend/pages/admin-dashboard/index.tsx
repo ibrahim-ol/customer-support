@@ -6,6 +6,7 @@ import {
   EmptyState,
 } from "../../components/cards/index.tsx";
 import { MoodAnalytics } from "../../components/mood/MoodAnalytics.tsx";
+import { RecentSummaries } from "../../components/summary/index.tsx";
 import { useApi } from "../../hooks/useApi.ts";
 import { useEffect } from "hono/jsx";
 import { MoodCategory } from "../../../types/mood.ts";
@@ -44,11 +45,29 @@ interface MoodAnalyticsResponse {
   };
 }
 
+interface RecentSummary {
+  id: string;
+  customerName: string;
+  channel: string;
+  mood: MoodCategory;
+  status: "active" | "killed";
+  createdAt: Date;
+  updatedAt: Date;
+  summary: string;
+  summaryUpdatedAt: Date;
+}
+
+interface RecentSummariesResponse {
+  success: boolean;
+  data: RecentSummary[];
+}
+
 export function AdminDashboardView() {
   const statsApi = useApi<StatsResponse>();
   const moodApi = useApi<MoodAnalyticsResponse>();
+  const summariesApi = useApi<RecentSummariesResponse>();
 
-  // Fetch stats and mood analytics on mount
+  // Fetch stats, mood analytics, and recent summaries on mount
   useEffect(() => {
     statsApi.execute("/admin/api/stats", {
       credentials: "include",
@@ -56,10 +75,14 @@ export function AdminDashboardView() {
     moodApi.execute("/admin/api/mood-analytics", {
       credentials: "include",
     });
+    summariesApi.execute("/admin/api/recent-summaries?limit=5", {
+      credentials: "include",
+    });
   }, []);
 
   const stats = statsApi.data?.data;
   const moodData = moodApi.data?.data;
+  const recentSummaries = summariesApi.data?.data || [];
 
   return (
     <BaseLayout>
@@ -154,15 +177,20 @@ export function AdminDashboardView() {
               />
             </div>
 
-            {(statsApi.error || moodApi.error) && (
+            {(statsApi.error || moodApi.error || summariesApi.error) && (
               <div className="mb-8">
                 <div className="p-4 bg-red-50 border border-red-200 rounded-md">
                   <div className="text-red-600">
                     {statsApi.error &&
                       `Error loading statistics: ${statsApi.error}`}
-                    {statsApi.error && moodApi.error && " | "}
+                    {statsApi.error &&
+                      (moodApi.error || summariesApi.error) &&
+                      " | "}
                     {moodApi.error &&
                       `Error loading mood analytics: ${moodApi.error}`}
+                    {moodApi.error && summariesApi.error && " | "}
+                    {summariesApi.error &&
+                      `Error loading summaries: ${summariesApi.error}`}
                   </div>
                 </div>
               </div>
@@ -213,16 +241,13 @@ export function AdminDashboardView() {
               </ContentCard>
             </div>
 
-            {/* Recent Activity */}
+            {/* Recent Conversation Summaries */}
             <div>
-              <h2 className="text-lg font-bold text-black mb-4">
-                Recent Activity
-              </h2>
               <ContentCard>
-                <EmptyState
-                  icon="📋"
-                  title="No recent activity to display"
-                  description="Activity will appear here as users interact with the system"
+                <RecentSummaries
+                  summaries={recentSummaries}
+                  isLoading={summariesApi.isLoading}
+                  error={summariesApi.error || undefined}
                 />
               </ContentCard>
             </div>

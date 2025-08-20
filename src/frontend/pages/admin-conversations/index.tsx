@@ -1,6 +1,7 @@
 import { BaseLayout } from "../../../utils/view.tsx";
 import { useState, useEffect } from "hono/jsx";
 import { ContentCard } from "../../components/cards/index.tsx";
+import { ConversationSummary } from "../../components/summary/index.tsx";
 import { useApi } from "../../hooks/useApi.ts";
 import { MoodCategory } from "../../../types/mood.ts";
 
@@ -23,6 +24,7 @@ interface ConversationListItem {
   messageCount: number;
   lastMessage: string;
   lastMessageAt: string;
+  summaryPreview: string;
 }
 
 interface ConversationDetails extends ConversationListItem {
@@ -53,6 +55,20 @@ export function AdminConversationsView() {
       credentials: "include",
     });
   }, []);
+
+  // Handle pre-selection via query parameter
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedParam = urlParams.get("selected");
+    if (selectedParam && conversationsApi.data?.data) {
+      const conversationExists = conversationsApi.data.data.find(
+        (c) => c.id === selectedParam,
+      );
+      if (conversationExists) {
+        handleSelectConversation(selectedParam);
+      }
+    }
+  }, [conversationsApi.data?.data]);
 
   // Fetch conversation details when selected
   const handleSelectConversation = async (conversationId: string) => {
@@ -273,6 +289,18 @@ export function AdminConversationsView() {
                         {conversation.lastMessage || "No messages"}
                       </p>
 
+                      {conversation.summaryPreview && (
+                        <div className="bg-blue-50 border-l-2 border-blue-200 p-2 mb-2 rounded-r text-xs">
+                          <div className="text-blue-600 font-medium mb-1 flex items-center">
+                            <span className="mr-1">🤖</span>
+                            Summary:
+                          </div>
+                          <p className="text-gray-600 leading-relaxed">
+                            {conversation.summaryPreview}
+                          </p>
+                        </div>
+                      )}
+
                       <div className="flex justify-between items-center text-xs text-gray-500">
                         <span>{conversation.messageCount} messages</span>
                         <span>
@@ -382,6 +410,16 @@ export function AdminConversationsView() {
                         </button>
                       )}
                     </div>
+                  </div>
+
+                  {/* Conversation Summary */}
+                  <div className="mt-6 pt-4 border-t border-gray-200">
+                    <ConversationSummary
+                      summary={selectedConversation.summary}
+                      isLoading={conversationDetailApi.isLoading}
+                      showTitle={true}
+                      className="max-w-none"
+                    />
                   </div>
                 </div>
 
