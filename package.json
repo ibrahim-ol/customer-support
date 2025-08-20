@@ -8,6 +8,7 @@
     "db:seed": "tsx src/db/seed.ts",
     "db:seed-products": "tsx src/db/seed-products.ts",
     "db:seed-conversations": "tsx src/db/seed-conversations.ts",
+    "test:ai-tool": "tsx src/test-tool.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "start:fe": "vite build --watch",
     "build:fe": "vite build"
