@@ -1,0 +1,31 @@
+{
+  "name": "hono",
+  "type": "module",
+  "scripts": {
+    "start": "tsx watch src/index.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build:fe": "parcel './src/frontend/*.html'"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.18.2",
+    "ai": "4.3.19",
+    "better-sqlite3": "^9.4.0",
+    "drizzle-orm": "^0.36.0",
+    "hono": "^4.9.2",
+    "openai": "^5.12.2",
+    "uuid": "^11.1.0",
+    "workers-ai-provider": "^0.7.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^20.11.17",
+    "drizzle-kit": "^0.31.4",
+    "parcel": "^2.15.4",
+    "tsx": "^4.7.1",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
+}

@@ -1,0 +1,30 @@
+### App base home
+GET http://localhost:3000/
+
+
+### NEW conversation
+POST http://localhost:3000/chat
+Content-Type: application/json
+
+{
+  "message": "Hello there. I have some questions for you",
+  "conversation": null
+}
+
+
+### Existing conversation
+POST http://localhost:3000/chat
+Content-Type: application/json
+
+{
+  "message": "Okay. I have a complaint about a service of yours",
+  "conversation_id": "0198bf52-3b73-70ab-a355-24b4ecb345e4"
+}
+
+
+### Fetch chat conversations
+GET http://localhost:3000/chat/0198bf52-3b73-70ab-a355-24b4ecb345e4
+
+
+### Fetch all chats
+GET http://localhost:3000/chat
