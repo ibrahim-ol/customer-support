@@ -5,8 +5,12 @@ import adminRouter from "./routes/admin/route.tsx";
 import { logger } from "hono/logger";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { NotFoundPage } from "./frontend/pages/errors/404.tsx";
+import { apiRateLimit } from "./middleware/rateLimit.ts";
 
 const app = new Hono();
+
+// Global rate limiting for all requests
+app.use("*", apiRateLimit);
 
 app.use(logger());
 

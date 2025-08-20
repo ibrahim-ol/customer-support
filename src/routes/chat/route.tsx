@@ -13,6 +13,12 @@ import {
 import { ChatRepository } from "./repository.ts";
 import { RenderClientView } from "../../utils/view.tsx";
 import { StartChatView } from "../../frontend/pages/new-chat.tsx";
+import {
+  chatRateLimit,
+  conversationRateLimit,
+  apiRateLimit,
+  strictRateLimit,
+} from "../../middleware/rateLimit.ts";
 
 const router = new Hono();
 
@@ -24,7 +30,7 @@ router.get("/view/:conversationId", async (c) => {
   return c.html(<RenderClientView name="ongoing-chat" />);
 });
 
-router.post("/new", async (c) => {
+router.post("/new", conversationRateLimit, async (c) => {
   const formData = await c.req.formData();
   let message = formData.get("message");
   if (!message || typeof message !== "string")
@@ -88,6 +94,7 @@ router.post("/new", async (c) => {
 /// # Start/Continue conversation
 router.post(
   "/",
+  strictRateLimit,
   validateReqBody(chatSchema, async (c, data) => {
     const { conversation_id, message } = data;
     let conversationId = conversation_id;
@@ -183,12 +190,12 @@ router.post(
   }),
 );
 
-router.get("/", async (c) => {
+router.get("/", apiRateLimit, async (c) => {
   const result = await db.select().from(conversations);
   return c.json({ data: result });
 });
 /// # GET conversations
-router.get("/:conversationId", async (c) => {
+router.get("/:conversationId", apiRateLimit, async (c) => {
   const conversationId = c.req.param("conversationId");
   const parsedId = z.string().uuid().safeParse(conversationId);
   if (!parsedId.success) {
@@ -201,7 +208,7 @@ router.get("/:conversationId", async (c) => {
 });
 
 /// # GET conversation analytics (mood and summary)
-router.get("/:conversationId/analytics", async (c) => {
+router.get("/:conversationId/analytics", apiRateLimit, async (c) => {
   const conversationId = c.req.param("conversationId");
   const parsedId = z.string().uuid().safeParse(conversationId);
   if (!parsedId.success) {
@@ -229,7 +236,7 @@ router.get("/:conversationId/analytics", async (c) => {
 });
 
 /// # GET detailed mood history
-router.get("/:conversationId/mood-history", async (c) => {
+router.get("/:conversationId/mood-history", apiRateLimit, async (c) => {
   const conversationId = c.req.param("conversationId");
   const parsedId = z.string().uuid().safeParse(conversationId);
   if (!parsedId.success) {
