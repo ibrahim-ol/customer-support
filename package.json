@@ -2,7 +2,7 @@
   "name": "hono",
   "type": "module",
   "scripts": {
-    "start": "vite build && tsx watch src/index.ts",
+    "start": "vite build && tsx watch src/index.tsx",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "typecheck": "tsc -p tsconfig.json --noEmit",
