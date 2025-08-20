@@ -6,7 +6,7 @@ import { Constants } from "./constants.ts";
 export function BaseLayout(props: PropsWithChildren<{ scriptName?: string }>) {
   const script = props.scriptName
     ? html`<div id="root"></div>
-        <script src="/static/fe/${props.scriptName}.js"></script>`
+        <script type="module" src="/static/fe/${props.scriptName}.js"></script>`
     : "";
   return html`
     <html lang="en">
@@ -26,9 +26,9 @@ export function BaseLayout(props: PropsWithChildren<{ scriptName?: string }>) {
             --color-white: #ffffff;
 
             /* ===== Accent ===== */
-            --color-accent: #06b6d4; /* Accent – buttons, links, key highlights */
-            --color-accent-dark: #0e7490; /* Dark accent – button hover, active states */
-            --color-accent-light: #67e8f9; /* Light accent – subtle highlights, gradient blends */
+            --color-accent: #06b6d4;
+            --color-accent-dark: #0e7490;
+            --color-accent-light: #67e8f9;
           }
         </style>
         <title>${Constants.APP_NAME}</title>

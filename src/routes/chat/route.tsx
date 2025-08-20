@@ -1,8 +1,7 @@
 import { Context, Hono } from "hono";
 import { z } from "zod";
 import { db } from "../../db/index.ts";
-import { chat, conversations } from "../../db/schema.ts";
-import { eq } from "drizzle-orm";
+import { conversations } from "../../db/schema.ts";
 import { chatSchema } from "./schema.ts";
 import { validateReqBody } from "../../utils/index.ts";
 import { cleanReply, generateReply } from "../../services/ai.service.ts";
@@ -13,7 +12,7 @@ import { RenderClientView } from "../../utils/view.tsx";
 const router = new Hono();
 
 router.get("/test", async (c) => {
-  return c.html(<RenderClientView name="ongoing-chat" />);
+  return c.html(<RenderClientView name="admin-chat" />);
 });
 /// # Chat view
 router.get("/view", async (c) => {

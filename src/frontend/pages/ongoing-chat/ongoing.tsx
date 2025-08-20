@@ -1,11 +1,13 @@
-import { useEffect, useState } from "hono/jsx";
-import { ChatLayout } from "../components/chat-layout.tsx";
+import { useState } from "hono/jsx";
+import { ChatLayout } from "../../components/chat-layout.tsx";
+import { hc } from "hono/client";
 
 export function OngoingChatView() {
   const [messages, setMessages] = useState<string[]>([]);
   const addMessage = (message: string) => {
-    setMessages((m) => [...messages, message]);
+    setMessages((m) => [...m, message]);
   };
+  // TODO load chat;
   return (
     <ChatLayout>
       <div className="flex h-full flex-1 justify-center items-center flex-col">
