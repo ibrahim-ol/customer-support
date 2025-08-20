@@ -24,14 +24,12 @@ export function ChatMessage({ message }: ChatMessageProps) {
             : "bg-white text-black border border-black"
         }`}
       >
-        <div className="whitespace-pre-wrap break-words">
+        <div className="whitespace-pre-wrap break-words text-sm">
           {message.message}
         </div>
         <div
           className={`text-xs mt-2 ${
-            message.role === "user"
-              ? "text-gray-300"
-              : "text-gray-600"
+            message.role === "user" ? "text-gray-300" : "text-gray-600"
           }`}
         >
           {message.role === "user" ? "You" : "Assistant"} •{" "}

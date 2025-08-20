@@ -13,12 +13,12 @@ export function ChatHeader({
   onRefresh,
   isLoading,
   error,
-  onErrorDismiss
+  onErrorDismiss,
 }: ChatHeaderProps) {
   return (
-    <div className="bg-white border-b border-black p-4">
+    <div className="bg-white border-b border-black px-4 py-2">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-black">
+        <h2 className="text-sm font-semibold text-black">
           Conversation: {conversationId.slice(0, 8)}...
         </h2>
         <button

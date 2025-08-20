@@ -1,6 +1,6 @@
 import { useState, useEffect } from "hono/jsx";
 import { ChatLayout } from "../../components/chat-layout.tsx";
-import { useChatMessages } from "../../hooks/useApi.tsx";
+import { useChatMessages } from "../../hooks/useApi.ts";
 import {
   ChatHeader,
   MessagesList,
@@ -26,6 +26,7 @@ export function OngoingChatView() {
     if (!conversationId || send.isSending) return;
 
     try {
+      // tODO: optimistic update, push the message into the messages list
       await send.execute(conversationId, message);
 
       // TODO the response from sendAPI has this

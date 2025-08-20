@@ -1,6 +1,6 @@
 import { useState } from "hono/jsx";
-import { BaseLayout } from "../../../utils/view.tsx";
-import { ChatLayout } from "../../../frontend/components/chat-layout.tsx";
+import { ChatLayout } from "../components/chat-layout.tsx";
+import { BaseLayout } from "../../utils/view.tsx";
 
 export function StartChatView({ error }: { error?: string }) {
   const [submitted, setSubmitted] = useState(false);

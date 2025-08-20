@@ -6,8 +6,8 @@ import { chatSchema } from "./schema.ts";
 import { validateReqBody } from "../../utils/index.ts";
 import { cleanReply, generateReply } from "../../services/ai.service.ts";
 import { ChatRepository } from "./repository.ts";
-import { StartChatView } from "./views/index.tsx";
 import { RenderClientView } from "../../utils/view.tsx";
+import { StartChatView } from "../../frontend/pages/new-chat.tsx";
 
 const router = new Hono();
 

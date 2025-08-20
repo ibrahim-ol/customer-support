@@ -6,8 +6,9 @@ interface MessageInputProps {
   messageCount: number;
 }
 
-export function MessageInput({ onSendMessage, isDisabled, messageCount }: MessageInputProps) {
+export function MessageInput({ onSendMessage, isDisabled }: MessageInputProps) {
   const [message, setMessage] = useState("");
+  const [inputFocus, setInputFocus] = useState(false);
 
   // Auto-expand textarea
   const handleTextareaChange = (e: Event) => {
@@ -28,7 +29,7 @@ export function MessageInput({ onSendMessage, isDisabled, messageCount }: Messag
     setMessage("");
 
     // Reset textarea height
-    const textarea = (e.target as HTMLFormElement).querySelector('textarea');
+    const textarea = (e.target as HTMLFormElement).querySelector("textarea");
     if (textarea) {
       textarea.style.height = "auto";
     }
@@ -57,9 +58,11 @@ export function MessageInput({ onSendMessage, isDisabled, messageCount }: Messag
             value={message}
             onChange={handleTextareaChange}
             onKeyDown={handleKeyPress}
+            onFocus={() => setInputFocus(true)}
+            onBlur={() => setInputFocus(false)}
             placeholder="Type your message..."
-            className="w-full resize-none border border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-black"
-            rows={1}
+            className="w-full resize-none border border-black rounded-lg px-4 py-3 focus:outline-none focus:ring focus:ring-black focus:border-black text-black"
+            rows={inputFocus ? 4 : 1}
             disabled={isDisabled}
             style={{ minHeight: "48px", maxHeight: "120px" }}
           />
@@ -67,7 +70,7 @@ export function MessageInput({ onSendMessage, isDisabled, messageCount }: Messag
         <button
           type="submit"
           disabled={isDisabled || !message.trim()}
-          className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center space-x-2 min-w-[80px] justify-center"
+          className="bg-black text-white self-end px-6 py-3 rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center space-x-2 min-w-[80px] justify-center"
         >
           {isDisabled ? (
             <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
@@ -78,7 +81,6 @@ export function MessageInput({ onSendMessage, isDisabled, messageCount }: Messag
       </form>
       <div className="mt-2 text-xs text-black flex justify-between">
         <span>Press Enter to send, Shift+Enter for new line</span>
-        <span>{messageCount} messages</span>
       </div>
     </div>
   );
