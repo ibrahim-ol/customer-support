@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { AdminLoginView } from "../../frontend/pages/admin-login/index.tsx";
 import { AdminDashboardView } from "../../frontend/pages/admin-dashboard/index.tsx";
+import { AdminConversationsView } from "../../frontend/pages/admin-conversations/index.tsx";
 
 import {
   requireAdminAuth,
@@ -8,6 +9,7 @@ import {
   clearAdminSession,
 } from "../../middleware/auth.ts";
 import { AdminService } from "../../services/admin.service.ts";
+import { RenderClientView } from "../../utils/view.tsx";
 
 const router = new Hono();
 
@@ -48,7 +50,12 @@ router.post("/login", async (c) => {
 
 // Admin dashboard
 router.get("/dashboard", requireAdminAuth, async (c) => {
-  return c.html(<AdminDashboardView />);
+  return c.html(<RenderClientView name="admin-dashboard" />);
+});
+
+// Admin conversations
+router.get("/conversations", requireAdminAuth, async (c) => {
+  return c.html(<RenderClientView name="admin-conversations" />);
 });
 
 // Admin logout

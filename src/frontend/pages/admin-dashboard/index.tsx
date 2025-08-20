@@ -5,8 +5,30 @@ import {
   ContentCard,
   EmptyState,
 } from "../../components/cards/index.tsx";
+import { useApi } from "../../hooks/useApi.ts";
+import { useEffect } from "hono/jsx";
+
+interface StatsResponse {
+  success: boolean;
+  data: {
+    totalConversations: number;
+    totalMessages: number;
+    averageMessagesPerConversation: number;
+  };
+}
 
 export function AdminDashboardView() {
+  const statsApi = useApi<StatsResponse>();
+
+  // Fetch stats on mount
+  useEffect(() => {
+    statsApi.execute("/admin/api/stats", {
+      credentials: "include",
+    });
+  }, []);
+
+  const stats = statsApi.data?.data;
+
   return (
     <BaseLayout>
       <div className="flex flex-col h-screen bg-white">
@@ -31,10 +53,44 @@ export function AdminDashboardView() {
           <div className="max-w-7xl mx-auto">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <StatsCard title="Total Conversations" value="--" icon="💬" />
-              <StatsCard title="Active Users" value="--" icon="👥" />
-              <StatsCard title="System Status" value="Online" icon="⚙️" />
+              <StatsCard
+                title="Total Conversations"
+                value={
+                  statsApi.isLoading
+                    ? "Loading..."
+                    : stats?.totalConversations?.toString() || "--"
+                }
+                icon="💬"
+              />
+              <StatsCard
+                title="Total Messages"
+                value={
+                  statsApi.isLoading
+                    ? "Loading..."
+                    : stats?.totalMessages?.toString() || "--"
+                }
+                icon="📨"
+              />
+              <StatsCard
+                title="Avg Messages/Chat"
+                value={
+                  statsApi.isLoading
+                    ? "Loading..."
+                    : stats?.averageMessagesPerConversation?.toString() || "--"
+                }
+                icon="📊"
+              />
             </div>
+
+            {statsApi.error && (
+              <div className="mb-8">
+                <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+                  <div className="text-red-600">
+                    Error loading statistics: {statsApi.error}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Quick Actions */}
             <div className="mb-8">
@@ -49,9 +105,9 @@ export function AdminDashboardView() {
                     onClick={() => console.log("Navigate to users")}
                   />
                   <ActionCard
-                    title="View Chats"
+                    title="View Conversations"
                     icon="💬"
-                    href="/admin/chats"
+                    href="/admin/conversations"
                   />
                   <ActionCard
                     title="Analytics"

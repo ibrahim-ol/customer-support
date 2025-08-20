@@ -2,38 +2,11 @@ import { db } from "../db/index.ts";
 import { conversations, chat, aiSummary } from "../db/schema.ts";
 import { eq, desc, sql, count } from "drizzle-orm";
 
-export interface ConversationListItem {
-  id: string;
-  customerName: string;
-  channel: string;
-  createdAt: Date;
-  updatedAt: Date;
-  messageCount: number;
-  lastMessage: string | null;
-  lastMessageAt: Date | null;
-}
-
-export interface ConversationDetails {
-  id: string;
-  customerName: string;
-  channel: string;
-  createdAt: Date;
-  updatedAt: Date;
-  messages: Array<{
-    id: string;
-    message: string;
-    role: "user" | "assistant";
-    userId: number | null;
-    createdAt: Date;
-  }>;
-  summary?: string;
-}
-
 export const AdminService = {
   /**
    * Get list of conversations with metadata
    */
-  async getConversations(): Promise<ConversationListItem[]> {
+  async getConversations() {
     // Get conversations with stats
     const results = await db
       .select({
@@ -57,9 +30,7 @@ export const AdminService = {
   /**
    * Get detailed conversation with all messages
    */
-  async getConversationDetails(
-    id: string,
-  ): Promise<ConversationDetails | null> {
+  async getConversationDetails(id: string) {
     const conversation = await db
       .select()
       .from(conversations)
@@ -77,7 +48,7 @@ export const AdminService = {
     return {
       ...conversation[0],
       messages,
-      summary: ""
+      summary: "",
     };
   },
 
