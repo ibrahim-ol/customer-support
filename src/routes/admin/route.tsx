@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { AdminLoginView } from "../../frontend/pages/admin-login/admin-login.tsx";
 import { AdminDashboardView } from "../../frontend/pages/admin-dashboard.tsx";
+import { EnhancedAdminDashboardView } from "../../frontend/pages/admin-dashboard-enhanced.tsx";
 import {
   requireAdminAuth,
   setAdminSession,
@@ -47,6 +48,11 @@ router.post("/login", async (c) => {
 // Admin dashboard
 router.get("/dashboard", requireAdminAuth, async (c) => {
   return c.html(<AdminDashboardView />);
+});
+
+// Enhanced admin dashboard
+router.get("/dashboard/enhanced", requireAdminAuth, async (c) => {
+  return c.html(<EnhancedAdminDashboardView />);
 });
 
 // Admin logout

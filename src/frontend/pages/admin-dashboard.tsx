@@ -1,4 +1,10 @@
 import { BaseLayout } from "../../utils/view.tsx";
+import {
+  StatsCard,
+  ActionCard,
+  ContentCard,
+  EmptyState,
+} from "../components/cards/index.tsx";
 
 export function AdminDashboardView() {
   return (
@@ -23,55 +29,38 @@ export function AdminDashboardView() {
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto">
+            {/* Dashboard Navigation */}
+            <div className="mb-6">
+              <ContentCard>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-black">
+                      Dashboard View
+                    </h3>
+                    <p className="text-xs text-black">
+                      Switch between dashboard layouts
+                    </p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <span className="bg-black text-white px-3 py-1 text-xs font-medium">
+                      Standard
+                    </span>
+                    <a
+                      href="/admin/dashboard/enhanced"
+                      className="bg-white text-black px-3 py-1 border border-black hover:bg-gray-50 transition-colors text-xs font-medium"
+                    >
+                      Enhanced
+                    </a>
+                  </div>
+                </div>
+              </ContentCard>
+            </div>
+
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white border border-black p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-black text-white flex items-center justify-center">
-                      <span className="text-sm font-bold">💬</span>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <h3 className="text-sm font-medium text-black">
-                      Total Conversations
-                    </h3>
-                    <p className="text-2xl font-bold text-black">--</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white border border-black p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-black text-white flex items-center justify-center">
-                      <span className="text-sm font-bold">👥</span>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <h3 className="text-sm font-medium text-black">
-                      Active Users
-                    </h3>
-                    <p className="text-2xl font-bold text-black">--</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white border border-black p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-black text-white flex items-center justify-center">
-                      <span className="text-sm font-bold">⚙️</span>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <h3 className="text-sm font-medium text-black">
-                      System Status
-                    </h3>
-                    <p className="text-2xl font-bold text-black">Online</p>
-                  </div>
-                </div>
-              </div>
+              <StatsCard title="Total Conversations" value="--" icon="💬" />
+              <StatsCard title="Active Users" value="--" icon="👥" />
+              <StatsCard title="System Status" value="Online" icon="⚙️" />
             </div>
 
             {/* Quick Actions */}
@@ -79,39 +68,30 @@ export function AdminDashboardView() {
               <h2 className="text-lg font-bold text-black mb-4">
                 Quick Actions
               </h2>
-              <div className="bg-white border border-black">
-                <div className="p-6">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <button className="flex flex-col items-center p-4 border border-black hover:bg-gray-50 transition-colors">
-                      <span className="text-2xl mb-2">👥</span>
-                      <span className="text-sm font-medium text-black">
-                        Manage Users
-                      </span>
-                    </button>
-
-                    <button className="flex flex-col items-center p-4 border border-black hover:bg-gray-50 transition-colors">
-                      <span className="text-2xl mb-2">💬</span>
-                      <span className="text-sm font-medium text-black">
-                        View Chats
-                      </span>
-                    </button>
-
-                    <button className="flex flex-col items-center p-4 border border-black hover:bg-gray-50 transition-colors">
-                      <span className="text-2xl mb-2">📈</span>
-                      <span className="text-sm font-medium text-black">
-                        Analytics
-                      </span>
-                    </button>
-
-                    <button className="flex flex-col items-center p-4 border border-black hover:bg-gray-50 transition-colors">
-                      <span className="text-2xl mb-2">⚙️</span>
-                      <span className="text-sm font-medium text-black">
-                        Settings
-                      </span>
-                    </button>
-                  </div>
+              <ContentCard>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <ActionCard
+                    title="Manage Users"
+                    icon="👥"
+                    onClick={() => console.log("Navigate to users")}
+                  />
+                  <ActionCard
+                    title="View Chats"
+                    icon="💬"
+                    href="/admin/chats"
+                  />
+                  <ActionCard
+                    title="Analytics"
+                    icon="📈"
+                    href="/admin/analytics"
+                  />
+                  <ActionCard
+                    title="Settings"
+                    icon="⚙️"
+                    href="/admin/settings"
+                  />
                 </div>
-              </div>
+              </ContentCard>
             </div>
 
             {/* Recent Activity */}
@@ -119,20 +99,13 @@ export function AdminDashboardView() {
               <h2 className="text-lg font-bold text-black mb-4">
                 Recent Activity
               </h2>
-              <div className="bg-white border border-black">
-                <div className="p-6">
-                  <div className="text-center py-8">
-                    <span className="text-4xl mb-4 block">📋</span>
-                    <p className="text-black font-medium">
-                      No recent activity to display
-                    </p>
-                    <p className="text-sm text-black mt-2">
-                      Activity will appear here as users interact with the
-                      system
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <ContentCard>
+                <EmptyState
+                  icon="📋"
+                  title="No recent activity to display"
+                  description="Activity will appear here as users interact with the system"
+                />
+              </ContentCard>
             </div>
           </div>
         </main>
