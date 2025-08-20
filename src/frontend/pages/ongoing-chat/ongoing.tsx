@@ -26,8 +26,7 @@ export function OngoingChatView() {
     if (!conversationId || send.isSending) return;
 
     try {
-      // Optimistic update is now handled in the hook
-      const { data } = await send.execute(conversationId, message);
+      await send.execute(conversationId, message);
     } catch (err) {
       console.error("Error sending message:", err);
     }
