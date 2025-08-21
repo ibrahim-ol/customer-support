@@ -4,7 +4,7 @@ import { db } from "../../db/index.ts";
 import { conversations } from "../../db/schema.ts";
 import { chatSchema } from "./schema.ts";
 import { validateReqBody } from "../../utils/index.ts";
-import { cleanReply, generateReply } from "../../services/ai.service.ts";
+import { generateReply } from "../../services/ai.service.ts";
 import { ChatRepository } from "./repository.ts";
 import { RenderClientView } from "../../utils/view.tsx";
 import {
@@ -44,7 +44,7 @@ router.post("/new", conversationRateLimit, async (c) => {
     chatHistory: [{ message, role: "user" }],
     conversationSummary: "",
   });
-  const assistantReply = cleanReply(reply.text);
+  const assistantReply = reply.text;
 
   await ChatRepository.addChat({
     conversationId: conversation.id,
@@ -84,7 +84,7 @@ router.post(
             error:
               "This conversation has been closed and cannot accept new messages",
           },
-          403,
+          403
         );
       }
     }
@@ -95,15 +95,16 @@ router.post(
       conversationId,
     });
 
-    const chatHistory =
-      await ChatRepository.getConversationChats(conversationId);
+    const chatHistory = await ChatRepository.getConversationChats(
+      conversationId
+    );
 
     // generate ai response here
     const reply = await generateReply({
       chatHistory: chatHistory,
       conversationSummary: "",
     });
-    const assistantReply = cleanReply(reply.text);
+    const assistantReply = reply.text;
 
     const assistantMessage = await ChatRepository.addChat({
       conversationId,
@@ -121,9 +122,10 @@ router.post(
       data: {
         request: messageRes,
         reply: assistantMessage,
+        result: reply,
       },
     });
-  }),
+  })
 );
 
 router.get("/", apiRateLimit, async (c) => {

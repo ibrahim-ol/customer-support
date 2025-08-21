@@ -1,15 +1,9 @@
-import { generateText, CoreMessage, tool } from "ai";
-import { z } from "zod";
-import { like, or } from "drizzle-orm";
+import { generateText, stepCountIs, ModelMessage } from "ai";
 import { replyModel, summaryModel } from "../utils/models.ts";
-import { Config } from "../utils/config.ts";
 import { MoodCategory, MOOD_ENUM } from "../types/mood.ts";
 
 import { getProducts } from "./tools.service.ts";
 import { Constants } from "../utils/constants.ts";
-
-// Re-export for backward compatibility
-export type { MoodCategory };
 
 const instructions = [
   "You are a helpful customer support assistant.",
@@ -18,40 +12,22 @@ const instructions = [
   "When customers ask about services or pricing, use the getProducts tool to get current information.",
   "Only call the getProducts tool ONCE per conversation.",
   "Do not tell users you are a computer program - you are a customer service assistant.",
-  "",
+  "Keep your responses concise",
   "RESPONSE RULES:",
   "1. If a customer asks about our services, products, or pricing - use the getProducts tool",
   "2. If a customer asks about weather, sports, news, cooking, or other unrelated topics, respond with:",
   "   'I'm focused on supporting customers with our services and can't help with that. Please ask me about our company services instead.'",
   "3. NEVER say 'function definitions are not comprehensive' or similar technical responses",
   "4. Always be helpful and professional",
-  "",
-  "PRODUCT FORMATTING RULES:",
-  "When you receive product data from the tool, format it EXACTLY like this:",
-  "",
-  "Here are our available services:",
-  "",
-  "**1. [Service Name]** - €[Price]",
-  "[Service description]",
-  "",
-  "**2. [Service Name]** - €[Price]",
-  "[Service description]",
-  "",
-  "IMPORTANT:",
-  "- Use numbered lists starting with 1",
-  "- Bold service names with ** **",
-  "- Include prices with € symbol",
-  "- Add blank lines between services",
-  "- Keep descriptions concise but informative",
 ];
 export async function generateReply(args: {
   conversationSummary: string;
   chatHistory: { role: "assistant" | "user"; message: string }[];
 }) {
-  const messages: CoreMessage[] = [
+  const messages: ModelMessage[] = [
     {
       role: "system",
-      content: instructions.join("\n"),
+      content: instructions.join("\n\n"),
     },
     ...args.chatHistory.map((h) => ({
       role: h.role,
@@ -65,25 +41,10 @@ export async function generateReply(args: {
     tools: {
       getProducts,
     },
-    maxSteps: 3,
+    stopWhen: stepCountIs(3),
   });
 
-  if (result.steps.length > 0) {
-    console.log({
-      steps: result.steps.map((step) => ({
-        stepType: step.stepType,
-        toolCall: step.toolCalls.map((t) => t.toolName),
-        toolresult: step.toolResults,
-      })),
-    });
-  }
-
   return result;
-}
-
-export function cleanReply(aiReply: string) {
-  // TODO remove the thinking part from deepseek r1
-  return aiReply;
 }
 
 export async function generateSummary(args: {
@@ -99,7 +60,7 @@ export async function generateSummary(args: {
     "Include key details about services discussed, problems raised, and resolutions offered.",
   ];
 
-  const messages: CoreMessage[] = [
+  const messages: ModelMessage[] = [
     {
       role: "system",
       content: summaryInstructions.join("\n"),
@@ -150,7 +111,7 @@ export async function classifyMood(args: {
   // Only include user messages for mood analysis
   const userMessages = args.chatHistory.filter((h) => h.role === "user");
 
-  const messages: CoreMessage[] = [
+  const messages: ModelMessage[] = [
     {
       role: "system",
       content: moodInstructions.join("\n"),

@@ -1,7 +1,6 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 import { dbId } from "../utils/index.ts";
-import { timestamp } from "drizzle-orm/mysql-core";
 import { MOOD_ENUM } from "../types/mood.ts";
 
 const timestamps = {

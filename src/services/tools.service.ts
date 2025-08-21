@@ -7,12 +7,12 @@ import { like, or } from "drizzle-orm";
 export const getProducts = tool({
   description:
     "Get the list of available services and products offered by the company. Use this when customers ask about services, pricing, or what the company offers. Format the response clearly with service names, descriptions, and prices in a structured way for easy reading.",
-  parameters: z.object({
+  inputSchema: z.object({
     query: z
       .string()
       .optional()
       .describe(
-        "Optional search query to filter products by name or description",
+        "Optional search query to filter products by name or description"
       ),
   }),
   execute: async ({ query }) => {
@@ -27,8 +27,8 @@ export const getProducts = tool({
           .where(
             or(
               like(product.name, `%${query}%`),
-              like(product.description, `%${query}%`),
-            ),
+              like(product.description, `%${query}%`)
+            )
           );
       }
       if (!products || products.length === 0) {

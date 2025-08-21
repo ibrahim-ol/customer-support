@@ -1,12 +1,19 @@
 import { createWorkersAI } from "workers-ai-provider";
 import { Config } from "./config.ts";
 import OpenAI from "openai";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { extractReasoningMiddleware, wrapLanguageModel } from "ai";
 
 const workersAi = () =>
   createWorkersAI({
     accountId: Config.CLOUDFLARE_ACCOUNT_ID,
     apiKey: Config.CLOUDFLARE_WORKER_AI_KEY,
   });
+
+const openRouter = createOpenRouter({
+  apiKey: Config.OPENROUTER_API_KEY,
+});
 
 export const modelList = {
   gptOss20b: "@cf/openai/gpt-oss-20b",
@@ -18,10 +25,26 @@ export const modelList = {
   bartLarge: "@cf/facebook/bart-large-cnn", // good with summarization
 };
 
-export const replyModel = () =>
-  workersAi()(modelList.llama3, { safePrompt: true });
+const client = createOpenAICompatible({
+  apiKey: Config.LOCAL_LLM_API_KEY,
+  name: "JAN",
+  baseURL: Config.LOCAL_LLM_BASE_URL, // Jan local server
+});
 
-export const summaryModel = () => workersAi()(modelList.gemma3);
+export const replyModel = () =>
+  wrapLanguageModel({
+    model: client("Jan-v1-4B-Q4_K_M"),
+    middleware: extractReasoningMiddleware({ tagName: "think" }),
+  });
+
+// export const replyModel = () =>
+//   openRouter.completion("deepseek/deepseek-r1-0528-qwen3-8b:free");
+//   workersAi()(modelList.deepSeekR1, { safePrompt: true });
+
+export const summaryModel = () => replyModel();
+// export const summaryModel = () => workersAi()(modelList.gemma3);
+// export const summaryModel = () =>
+// openRouter.completion("deepseek/deepseek-r1-0528-qwen3-8b:free");
 
 export const openai = new OpenAI({
   apiKey: Config.CLOUDFLARE_WORKER_AI_KEY,

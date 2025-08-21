@@ -7,7 +7,7 @@ POST http://localhost:3000/chat
 Content-Type: application/json
 
 {
-  "message": "Hello there. I have some questions for you",
+  "message": "Hello there. I have some questions for you. What services do you guys offer?",
   "conversation": null
 }
 

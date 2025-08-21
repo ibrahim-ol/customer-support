@@ -136,7 +136,7 @@ export function MoodHistory({ data, isLoading, error }: MoodHistoryProps) {
         </div>
 
         <div className="space-y-3">
-          {data.moodHistory.map((entry, index) => {
+          {data.moodHistory.map((entry, index, arrayInstance) => {
             const previousEntry = data.moodHistory[index + 1];
             const trendIcon = getMoodTrendIcon(entry.mood, previousEntry?.mood);
 
@@ -152,7 +152,9 @@ export function MoodHistory({ data, isLoading, error }: MoodHistoryProps) {
 
                 {/* Mood indicator */}
                 <div
-                  className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${getMoodColor(entry.mood)} relative z-10`}
+                  className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${getMoodColor(
+                    entry.mood
+                  )} relative z-10`}
                 >
                   <span className="text-sm">{getMoodEmoji(entry.mood)}</span>
                 </div>
@@ -162,7 +164,9 @@ export function MoodHistory({ data, isLoading, error }: MoodHistoryProps) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <span
-                        className={`text-sm font-medium capitalize ${getMoodColor(entry.mood).split(" ")[0]}`}
+                        className={`text-sm font-medium capitalize ${
+                          getMoodColor(entry.mood).split(" ")[0]
+                        }`}
                       >
                         {entry.mood}
                       </span>
@@ -183,7 +187,7 @@ export function MoodHistory({ data, isLoading, error }: MoodHistoryProps) {
                     </p>
                   )}
 
-                  {index === 0 && (
+                  {index === arrayInstance.length - 1 && (
                     <p className="text-xs text-green-600 mt-1 font-medium">
                       Most recent
                     </p>
@@ -207,7 +211,7 @@ export function MoodHistory({ data, isLoading, error }: MoodHistoryProps) {
               <div className="text-lg font-bold text-gray-900">
                 {data.moodHistory.length > 0
                   ? Math.round(
-                      (data.moodHistory.length / data.totalEntries) * 100,
+                      (data.moodHistory.length / data.totalEntries) * 100
                     )
                   : 0}
                 %
@@ -218,7 +222,7 @@ export function MoodHistory({ data, isLoading, error }: MoodHistoryProps) {
               <div className="text-lg font-bold text-green-600">
                 {
                   data.moodHistory.filter((entry) =>
-                    ["happy", "satisfied", "excited"].includes(entry.mood),
+                    ["happy", "satisfied", "excited"].includes(entry.mood)
                   ).length
                 }
               </div>
@@ -228,9 +232,7 @@ export function MoodHistory({ data, isLoading, error }: MoodHistoryProps) {
               <div className="text-lg font-bold text-red-600">
                 {
                   data.moodHistory.filter((entry) =>
-                    ["angry", "frustrated", "disappointed"].includes(
-                      entry.mood,
-                    ),
+                    ["angry", "frustrated", "disappointed"].includes(entry.mood)
                   ).length
                 }
               </div>
