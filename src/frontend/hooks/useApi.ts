@@ -195,3 +195,12 @@ export function useChatMessages(conversationId: string | null) {
     },
   };
 }
+
+export function useFetch<TResponse>(url: string, auth: boolean) {
+  const api = useApi<TResponse>();
+
+  useEffect(() => {
+    api.execute(url, auth ? { credentials: "include" } : {});
+  }, [url]);
+  return api;
+}

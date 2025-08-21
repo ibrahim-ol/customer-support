@@ -198,6 +198,7 @@ export const AdminService = {
       neutral: 0,
       excited: 0,
       disappointed: 0,
+      curious: 0,
     };
 
     allMoodEntries.forEach((entry) => {
@@ -214,6 +215,7 @@ export const AdminService = {
       neutral: 0,
       excited: 0,
       disappointed: 0,
+      curious: 0,
     };
 
     currentMoods.forEach((mood) => {
@@ -227,7 +229,7 @@ export const AdminService = {
       "frustrated",
       "disappointed",
     ];
-    const neutralMoods: MoodCategory[] = ["neutral", "confused"];
+    const neutralMoods: MoodCategory[] = ["neutral", "confused", "curious"];
 
     const sentimentBreakdown = {
       positive: positiveMoods.reduce(
@@ -289,9 +291,10 @@ export const AdminService = {
           disappointed: 3,
           confused: 4,
           neutral: 5,
-          happy: 6,
-          satisfied: 7,
-          excited: 8,
+          curious: 6,
+          happy: 7,
+          satisfied: 8,
+          excited: 9,
         };
         return scores[mood];
       };
