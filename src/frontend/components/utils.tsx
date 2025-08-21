@@ -30,6 +30,21 @@ export const getMoodColor = (mood: MoodCategory): string => {
   return colors[mood];
 };
 
+export const getMoodScore = (mood: MoodCategory): number => {
+  const scores: Record<MoodCategory, number> = {
+    angry: 1,
+    frustrated: 2,
+    disappointed: 3,
+    confused: 4,
+    neutral: 5,
+    curious: 6,
+    happy: 7,
+    satisfied: 8,
+    excited: 9,
+  };
+  return scores[mood];
+};
+
 export const getSentimentColor = (sentiment: string): string => {
   switch (sentiment) {
     case "positive":
@@ -39,4 +54,23 @@ export const getSentimentColor = (sentiment: string): string => {
     default:
       return "text-gray-600 bg-gray-50";
   }
+};
+
+// Format price for display
+export const formatPrice = (price: number) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(price);
+};
+
+// Format date for display
+export const formatDate = (date: Date | string) => {
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };

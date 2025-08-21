@@ -1,28 +1,20 @@
 import { setupView } from "../../../utils/view.tsx";
 import { ContentCard } from "../../components/cards/index.tsx";
-import { MoodAnalytics } from "../../components/mood/MoodAnalytics.tsx";
 import { RecentSummaries } from "../../components/summary/index.tsx";
-import { useApi } from "../../hooks/useApi.ts";
-import { useEffect } from "hono/jsx";
+import { useFetch } from "../../hooks/useApi.ts";
 import { MoodCategory } from "../../../types/mood.ts";
 import { QuickActions } from "./quick-actions.tsx";
 import { GeneralStats } from "./general-stats.tsx";
+import { ActionableInsights } from "../../components/mood/actionable-insights.tsx";
+import { useMoodAnaltyics } from "../../components/mood/api.ts";
 
 function AdminDashboardView() {
-  const moodApi = useApi<MoodAnalyticsResponse>();
-  const summariesApi = useApi<RecentSummariesResponse>();
+  const summariesApi = useFetch<RecentSummariesResponse>(
+    "/admin/api/recent-summaries?limit=5",
+    true,
+  );
+  const moodData = useMoodAnaltyics().data;
 
-  // Fetch mood analytics, and recent summaries on mount
-  useEffect(() => {
-    moodApi.execute("/admin/api/mood-analytics", {
-      credentials: "include",
-    });
-    summariesApi.execute("/admin/api/recent-summaries?limit=5", {
-      credentials: "include",
-    });
-  }, []);
-
-  const moodData = moodApi.data?.data;
   const recentSummaries = summariesApi.data?.data || [];
   return (
     <div className="flex flex-col h-screen bg-white">
@@ -51,22 +43,13 @@ function AdminDashboardView() {
           {/* Quick Actions */}
           <QuickActions />
 
-          {/* Mood Analytics */}
-          <div className="mb-8">
-            <h2 className="text-lg font-bold text-black mb-4">
-              Customer Mood Analytics
-            </h2>
-            <ContentCard>
-              <MoodAnalytics
-                data={moodData!}
-                isLoading={moodApi.isLoading}
-                error={moodApi.error || undefined}
-              />
-            </ContentCard>
-          </div>
+          {/* Urgent Actionable Insights */}
+          {moodData && (
+            <ActionableInsights borderType="heavy" data={moodData} />
+          )}
 
           {/* Recent Conversation Summaries */}
-          <div>
+          <div className="mt-4">
             <ContentCard>
               <RecentSummaries
                 summaries={recentSummaries}
@@ -79,24 +62,6 @@ function AdminDashboardView() {
       </main>
     </div>
   );
-}
-interface MoodAnalyticsResponse {
-  success: boolean;
-  data: {
-    overallMoodDistribution: Record<MoodCategory, number>;
-    totalMoodEntries: number;
-    sentimentBreakdown: {
-      positive: number;
-      negative: number;
-      neutral: number;
-    };
-    currentMoodDistribution: Record<MoodCategory, number>;
-    moodTrends: {
-      improving: number;
-      declining: number;
-      stable: number;
-    };
-  };
 }
 
 interface RecentSummary {

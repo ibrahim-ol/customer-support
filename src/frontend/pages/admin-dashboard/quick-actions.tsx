@@ -6,7 +6,7 @@ export function QuickActions() {
     <div className="mb-8">
       <h2 className="text-lg font-bold text-black mb-4">Quick Actions</h2>
       <ContentCard>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <ActionCard
             title="Manage Products"
             icon="📦"
@@ -18,7 +18,6 @@ export function QuickActions() {
             href="/admin/conversations"
           />
           <ActionCard title="Analytics" icon="📈" href="/admin/analytics" />
-          <ActionCard title="Settings" icon="⚙️" href="/admin/settings" />
         </div>
       </ContentCard>
     </div>

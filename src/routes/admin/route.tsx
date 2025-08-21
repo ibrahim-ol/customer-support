@@ -61,6 +61,11 @@ router.get("/products", requireAdminAuth, async (c) => {
   return c.html(<RenderClientView name="admin-products" />);
 });
 
+// Admin Analytics
+router.get("/analytics", requireAdminAuth, async (c) => {
+  return c.html(<RenderClientView name="admin-analytics" />);
+});
+
 // Conversation mood history page
 router.get("/conversations/:id/mood", requireAdminAuth, async (c) => {
   return c.html(<RenderClientView name="conversation-mood-history" />);

@@ -197,10 +197,17 @@ export function useChatMessages(conversationId: string | null) {
 }
 
 export function useFetch<TResponse>(url: string, auth: boolean) {
-  const api = useApi<TResponse>();
+  const { execute, ...api } = useApi<TResponse>();
+  const refresh = () => {
+    return execute(url, auth ? { credentials: "include" } : {});
+  };
 
   useEffect(() => {
-    api.execute(url, auth ? { credentials: "include" } : {});
+    refresh();
   }, [url]);
-  return api;
+
+  return {
+    ...api,
+    refresh,
+  };
 }

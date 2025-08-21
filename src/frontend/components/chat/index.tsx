@@ -1,7 +1,7 @@
-export { ChatHeader } from "./ChatHeader.tsx";
-export { ChatMessage } from "./ChatMessage.tsx";
-export { EmptyState } from "./EmptyState.tsx";
-export { LoadingIndicator } from "./LoadingIndicator.tsx";
-export { MessageInput } from "./MessageInput.tsx";
-export { MessagesList } from "./MessagesList.tsx";
-export { TypingIndicator } from "./TypingIndicator.tsx";
+export { ChatHeader } from "./chat-header.tsx";
+export { ChatMessage } from "./chat-message.tsx";
+export { EmptyState } from "./empty-state.tsx";
+export { LoadingIndicator } from "./loading-indicator.tsx";
+export { MessageInput } from "./message-input.tsx";
+export { MessagesList } from "./messages-list.tsx";
+export { TypingIndicator } from "./typing-indicator.tsx";

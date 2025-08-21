@@ -45,6 +45,8 @@ export function RenderClientView({ name }: { name: string }) {
 }
 
 export function setupView(App: FC) {
-  const root = document.getElementById("root");
-  render(<App />, root!);
+  if (typeof document !== "undefined") {
+    const root = document.getElementById("root");
+    render(<App />, root!);
+  }
 }

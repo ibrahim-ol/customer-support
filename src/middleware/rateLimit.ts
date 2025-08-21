@@ -27,8 +27,8 @@ function getClientIP(c: Context): string {
 
 // API Rate Limit - General endpoints
 export const apiRateLimit = rateLimiter({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: 100, // 100 requests per 15 minutes per IP
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  limit: 1000, // 1000 requests per 10 minutes per IP
   message: "Too many API requests. Please try again later.",
   standardHeaders: "draft-6", // Use RateLimit-* headers
   keyGenerator: (c) => getClientIP(c),

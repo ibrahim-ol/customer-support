@@ -1,5 +1,3 @@
-import { PropsWithChildren } from "hono/jsx";
-
 interface StatsCardProps {
   title: string;
   value: string | number;
@@ -16,12 +14,8 @@ export function StatsCard({ title, value, icon }: StatsCardProps) {
           </div>
         </div>
         <div className="ml-4">
-          <h3 className="text-sm font-medium text-black">
-            {title}
-          </h3>
-          <p className="text-2xl font-bold text-black">
-            {value}
-          </p>
+          <h3 className="text-sm font-medium text-black">{title}</h3>
+          <p className="text-2xl font-bold text-black">{value}</p>
         </div>
       </div>
     </div>

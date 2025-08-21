@@ -1,2 +1,2 @@
-export { ConversationSummary } from "./ConversationSummary.tsx";
-export { RecentSummaries } from "./RecentSummaries.tsx";
+export { ConversationSummary } from "./conversation-summary.tsx";
+export { RecentSummaries } from "./recent-summaries.tsx";

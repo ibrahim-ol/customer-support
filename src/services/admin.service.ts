@@ -7,7 +7,17 @@ import {
   moodTracking,
 } from "../db/schema.ts";
 import { eq, desc, sql, count } from "drizzle-orm";
-import { MoodCategory } from "../types/mood.ts";
+import {
+  MoodCategory,
+  negativeMoods,
+  neutralMoods,
+  positiveMoods,
+} from "../types/mood.ts";
+import {
+  ConversationStatsData,
+  MoodAnalyticsData,
+} from "../types/responses.ts";
+import { getMoodScore } from "../frontend/components/utils.tsx";
 
 export const AdminService = {
   /**
@@ -96,17 +106,7 @@ export const AdminService = {
   /**
    * Get conversation statistics
    */
-  async getConversationStats(): Promise<{
-    totalConversations: number;
-    totalMessages: number;
-    averageMessagesPerConversation: number;
-    moodStats: {
-      positiveCount: number;
-      negativeCount: number;
-      neutralCount: number;
-      totalMoodEntries: number;
-    };
-  }> {
+  async getConversationStats(): Promise<ConversationStatsData> {
     // Total conversations
     const [{ totalConversations }] = await db
       .select({ totalConversations: count() })
@@ -162,21 +162,7 @@ export const AdminService = {
   /**
    * Get mood analytics for all conversations
    */
-  async getMoodAnalytics(): Promise<{
-    overallMoodDistribution: Record<MoodCategory, number>;
-    totalMoodEntries: number;
-    sentimentBreakdown: {
-      positive: number;
-      negative: number;
-      neutral: number;
-    };
-    currentMoodDistribution: Record<MoodCategory, number>;
-    moodTrends: {
-      improving: number;
-      declining: number;
-      stable: number;
-    };
-  }> {
+  async getMoodAnalytics(): Promise<MoodAnalyticsData> {
     // Get all mood tracking entries
     const allMoodEntries = await db
       .select()
@@ -221,15 +207,6 @@ export const AdminService = {
     currentMoods.forEach((mood) => {
       currentMoodDistribution[mood.mood]++;
     });
-
-    // Sentiment breakdown
-    const positiveMoods: MoodCategory[] = ["happy", "satisfied", "excited"];
-    const negativeMoods: MoodCategory[] = [
-      "angry",
-      "frustrated",
-      "disappointed",
-    ];
-    const neutralMoods: MoodCategory[] = ["neutral", "confused", "curious"];
 
     const sentimentBreakdown = {
       positive: positiveMoods.reduce(
@@ -284,22 +261,7 @@ export const AdminService = {
       const firstMood = moodHistory[0].mood;
       const lastMood = moodHistory[moodHistory.length - 1].mood;
 
-      const moodScore = (mood: MoodCategory): number => {
-        const scores: Record<MoodCategory, number> = {
-          angry: 1,
-          frustrated: 2,
-          disappointed: 3,
-          confused: 4,
-          neutral: 5,
-          curious: 6,
-          happy: 7,
-          satisfied: 8,
-          excited: 9,
-        };
-        return scores[mood];
-      };
-
-      const scoreDiff = moodScore(lastMood) - moodScore(firstMood);
+      const scoreDiff = getMoodScore(lastMood) - getMoodScore(firstMood);
       if (scoreDiff > 0) improving++;
       else if (scoreDiff < 0) declining++;
       else stable++;

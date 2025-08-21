@@ -1,8 +1,8 @@
 import { useRef, useEffect } from "hono/jsx";
-import { ChatMessage } from "./ChatMessage.tsx";
-import { LoadingIndicator } from "./LoadingIndicator.tsx";
-import { EmptyState } from "./EmptyState.tsx";
-import { TypingIndicator } from "./TypingIndicator.tsx";
+import { ChatMessage } from "./chat-message.tsx";
+import { LoadingIndicator } from "./loading-indicator.tsx";
+import { EmptyState } from "./empty-state.tsx";
+import { TypingIndicator } from "./typing-indicator.tsx";
 
 interface Message {
   id: string;
@@ -18,7 +18,11 @@ interface MessagesListProps {
   isSending: boolean;
 }
 
-export function MessagesList({ messages, isLoading, isSending }: MessagesListProps) {
+export function MessagesList({
+  messages,
+  isLoading,
+  isSending,
+}: MessagesListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom function

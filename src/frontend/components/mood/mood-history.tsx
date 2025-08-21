@@ -1,4 +1,5 @@
 import { MoodCategory } from "../../../types/mood.ts";
+import { getMoodColor, getMoodEmoji, getMoodScore } from "../utils.tsx";
 
 interface MoodHistoryEntry {
   id: string;
@@ -65,52 +66,13 @@ export function MoodHistory({ data, isLoading, error }: MoodHistoryProps) {
     );
   }
 
-  const getMoodEmoji = (mood: MoodCategory): string => {
-    const emojis: Record<MoodCategory, string> = {
-      happy: "😊",
-      frustrated: "😤",
-      confused: "😕",
-      angry: "😠",
-      satisfied: "😌",
-      neutral: "😐",
-      excited: "🤩",
-      disappointed: "😞",
-    };
-    return emojis[mood];
-  };
-
-  const getMoodColor = (mood: MoodCategory): string => {
-    const colors: Record<MoodCategory, string> = {
-      happy: "text-green-600 bg-green-50 border-green-200",
-      frustrated: "text-orange-600 bg-orange-50 border-orange-200",
-      confused: "text-yellow-600 bg-yellow-50 border-yellow-200",
-      angry: "text-red-600 bg-red-50 border-red-200",
-      satisfied: "text-blue-600 bg-blue-50 border-blue-200",
-      neutral: "text-gray-600 bg-gray-50 border-gray-200",
-      excited: "text-purple-600 bg-purple-50 border-purple-200",
-      disappointed: "text-indigo-600 bg-indigo-50 border-indigo-200",
-    };
-    return colors[mood];
-  };
-
-  const getMoodTrendIcon = (currentMood: MoodCategory, previousMood?: MoodCategory): string => {
+  const getMoodTrendIcon = (
+    currentMood: MoodCategory,
+    previousMood?: MoodCategory,
+  ): string => {
     if (!previousMood) return "";
 
-    const moodScore = (mood: MoodCategory): number => {
-      const scores: Record<MoodCategory, number> = {
-        angry: 1,
-        frustrated: 2,
-        disappointed: 3,
-        confused: 4,
-        neutral: 5,
-        happy: 6,
-        satisfied: 7,
-        excited: 8,
-      };
-      return scores[mood];
-    };
-
-    const scoreDiff = moodScore(currentMood) - moodScore(previousMood);
+    const scoreDiff = getMoodScore(currentMood) - getMoodScore(previousMood);
     if (scoreDiff > 0) return "📈";
     if (scoreDiff < 0) return "📉";
     return "➡️";
@@ -119,7 +81,8 @@ export function MoodHistory({ data, isLoading, error }: MoodHistoryProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.abs(now.getTime() - date.getTime()) / (1000 * 60 * 60);
+    const diffInHours =
+      Math.abs(now.getTime() - date.getTime()) / (1000 * 60 * 60);
 
     if (diffInHours < 24) {
       return date.toLocaleTimeString("en-US", {
@@ -140,13 +103,17 @@ export function MoodHistory({ data, isLoading, error }: MoodHistoryProps) {
     <div className="space-y-6">
       {/* Current Status */}
       {data.currentMood && (
-        <div className={`p-4 rounded-lg border ${getMoodColor(data.currentMood)}`}>
+        <div
+          className={`p-4 rounded-lg border ${getMoodColor(data.currentMood)}`}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="text-2xl">{getMoodEmoji(data.currentMood)}</div>
               <div>
                 <h3 className="font-semibold text-lg">Current Mood</h3>
-                <p className="text-sm capitalize font-medium">{data.currentMood}</p>
+                <p className="text-sm capitalize font-medium">
+                  {data.currentMood}
+                </p>
               </div>
             </div>
             {data.moodChanged && (
@@ -163,7 +130,8 @@ export function MoodHistory({ data, isLoading, error }: MoodHistoryProps) {
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">Mood Timeline</h3>
           <span className="text-sm text-gray-500">
-            {data.totalEntries} mood {data.totalEntries === 1 ? "entry" : "entries"}
+            {data.totalEntries} mood{" "}
+            {data.totalEntries === 1 ? "entry" : "entries"}
           </span>
         </div>
 
@@ -173,14 +141,19 @@ export function MoodHistory({ data, isLoading, error }: MoodHistoryProps) {
             const trendIcon = getMoodTrendIcon(entry.mood, previousEntry?.mood);
 
             return (
-              <div key={entry.id} className="flex items-start space-x-3 relative">
+              <div
+                key={entry.id}
+                className="flex items-start space-x-3 relative"
+              >
                 {/* Timeline line */}
                 {index < data.moodHistory.length - 1 && (
                   <div className="absolute left-4 top-10 w-0.5 h-8 bg-gray-200"></div>
                 )}
 
                 {/* Mood indicator */}
-                <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${getMoodColor(entry.mood)} relative z-10`}>
+                <div
+                  className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${getMoodColor(entry.mood)} relative z-10`}
+                >
                   <span className="text-sm">{getMoodEmoji(entry.mood)}</span>
                 </div>
 
@@ -188,7 +161,9 @@ export function MoodHistory({ data, isLoading, error }: MoodHistoryProps) {
                 <div className="flex-1 min-w-0 pb-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <span className={`text-sm font-medium capitalize ${getMoodColor(entry.mood).split(' ')[0]}`}>
+                      <span
+                        className={`text-sm font-medium capitalize ${getMoodColor(entry.mood).split(" ")[0]}`}
+                      >
                         {entry.mood}
                       </span>
                       {trendIcon && (
@@ -223,29 +198,41 @@ export function MoodHistory({ data, isLoading, error }: MoodHistoryProps) {
         <div className="mt-6 pt-4 border-t border-gray-200">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div>
-              <div className="text-lg font-bold text-gray-900">{data.totalEntries}</div>
+              <div className="text-lg font-bold text-gray-900">
+                {data.totalEntries}
+              </div>
               <div className="text-xs text-gray-500">Total Changes</div>
             </div>
             <div>
               <div className="text-lg font-bold text-gray-900">
-                {data.moodHistory.length > 0 ?
-                  Math.round((data.moodHistory.length / data.totalEntries) * 100) : 0}%
+                {data.moodHistory.length > 0
+                  ? Math.round(
+                      (data.moodHistory.length / data.totalEntries) * 100,
+                    )
+                  : 0}
+                %
               </div>
               <div className="text-xs text-gray-500">Variability</div>
             </div>
             <div>
               <div className="text-lg font-bold text-green-600">
-                {data.moodHistory.filter(entry =>
-                  ["happy", "satisfied", "excited"].includes(entry.mood)
-                ).length}
+                {
+                  data.moodHistory.filter((entry) =>
+                    ["happy", "satisfied", "excited"].includes(entry.mood),
+                  ).length
+                }
               </div>
               <div className="text-xs text-gray-500">Positive</div>
             </div>
             <div>
               <div className="text-lg font-bold text-red-600">
-                {data.moodHistory.filter(entry =>
-                  ["angry", "frustrated", "disappointed"].includes(entry.mood)
-                ).length}
+                {
+                  data.moodHistory.filter((entry) =>
+                    ["angry", "frustrated", "disappointed"].includes(
+                      entry.mood,
+                    ),
+                  ).length
+                }
               </div>
               <div className="text-xs text-gray-500">Negative</div>
             </div>

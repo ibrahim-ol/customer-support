@@ -1,3 +1,4 @@
+import { type ConversationStatsData } from "../../../types/responses.ts";
 import { StatsCard } from "../../components/cards/stats-card.tsx";
 import { useFetch } from "../../hooks/useApi.ts";
 
@@ -93,15 +94,5 @@ export function GeneralStats() {
 
 interface StatsResponse {
   success: boolean;
-  data: {
-    totalConversations: number;
-    totalMessages: number;
-    averageMessagesPerConversation: number;
-    moodStats: {
-      positiveCount: number;
-      negativeCount: number;
-      neutralCount: number;
-      totalMoodEntries: number;
-    };
-  };
+  data: ConversationStatsData;
 }

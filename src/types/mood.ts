@@ -11,3 +11,12 @@ export const MOOD_ENUM = [
 ] as const;
 
 export type MoodCategory = (typeof MOOD_ENUM)[number];
+
+// Sentiment breakdown
+export const positiveMoods: MoodCategory[] = ["happy", "satisfied", "excited"];
+export const negativeMoods: MoodCategory[] = [
+  "angry",
+  "frustrated",
+  "disappointed",
+];
+export const neutralMoods: MoodCategory[] = ["neutral", "confused", "curious"];
