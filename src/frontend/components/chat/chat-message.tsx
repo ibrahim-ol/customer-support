@@ -1,3 +1,5 @@
+import { Markdown } from "../markdown.tsx";
+
 interface ChatMessage {
   id: string;
   message: string;
@@ -29,7 +31,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
         }`}
       >
         <div className="whitespace-pre-wrap break-words text-sm">
-          {message.message}
+          <Markdown content={message.message} />
           {isOptimistic && (
             <span className="inline-block ml-2 text-xs">⏳</span>
           )}

@@ -1,3 +1,4 @@
+import { Markdown } from "../../components/markdown.tsx";
 import { MoodBadge } from "../../components/mood/mood-badge.tsx";
 import { getMoodColor, getMoodEmoji } from "../../components/utils.tsx";
 import { ConversationDetails } from "./types.ts";
@@ -40,7 +41,7 @@ export function ChatMessages({
                 >
                   <div className="mb-1">
                     <div className="text-sm whitespace-pre-wrap">
-                      {message.message}
+                      <Markdown content={message.message} />
                     </div>
                   </div>
                   <div className="flex items-end justify-between gap-4">

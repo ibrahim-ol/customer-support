@@ -1,4 +1,5 @@
 import { FC } from "hono/jsx";
+import { Markdown } from "../markdown.tsx";
 
 interface ConversationSummaryProps {
   summary: string;
@@ -46,7 +47,8 @@ export const ConversationSummary: FC<ConversationSummaryProps> = ({
           <div className="text-center py-4">
             <div className="text-gray-400 text-3xl mb-2">📝</div>
             <p className="text-gray-500 text-sm">
-              No summary available yet. Summaries are generated after conversation interactions.
+              No summary available yet. Summaries are generated after
+              conversation interactions.
             </p>
           </div>
         </div>
@@ -64,7 +66,7 @@ export const ConversationSummary: FC<ConversationSummaryProps> = ({
       )}
       <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
         <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-          {summary}
+          <Markdown content={summary} />
         </div>
         <div className="mt-3 pt-3 border-t border-blue-200">
           <div className="flex items-center text-xs text-blue-600">
