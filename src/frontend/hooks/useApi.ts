@@ -32,7 +32,18 @@ export function useApi<T = any>(): UseApiReturn<T> {
 
         if (!response.ok) {
           const errorText = await response.text();
-          const errorMessage = `Request failed: ${response.status} ${response.statusText}`;
+          let errorMessage = `Request failed: ${response.status} ${response.statusText}`;
+
+          // Try to parse JSON error response
+          try {
+            const errorData = JSON.parse(errorText);
+            if (errorData.error) {
+              errorMessage = errorData.error;
+            }
+          } catch (e) {
+            // If parsing fails, use the status message
+          }
+
           setState({
             data: null,
             isLoading: false,
@@ -95,15 +106,42 @@ interface Message {
   createdAt: Date;
 }
 
+interface ConversationInfo {
+  id: string;
+  status: "active" | "killed";
+  customerName: string;
+  channel: string;
+}
+
+interface ChatResponse {
+  data: Message[];
+  conversation?: ConversationInfo;
+  error?: string;
+}
+
 // Specialized hook for chat messages with optimistic updates
 export function useChatMessages(conversationId: string | null) {
-  const fetchApi = useApi<{ data: Message[] }>();
+  const fetchApi = useApi<ChatResponse>();
   const sendApi = useApi<{ data: { request: Message; reply: Message } }>();
   const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([]);
+  const [isConversationKilled, setIsConversationKilled] = useState(false);
 
   const fetchMessages = useCallback(
     async (conversationId: string) => {
       const result = await fetchApi.execute(`/chat/${conversationId}`);
+
+      // Check if conversation is killed from the response
+      if (result?.conversation?.status === "killed") {
+        setIsConversationKilled(true);
+      } else if (
+        result?.error &&
+        result?.error.includes("closed and cannot accept new messages")
+      ) {
+        setIsConversationKilled(true);
+      } else {
+        setIsConversationKilled(false);
+      }
+
       // Clear optimistic messages when we get fresh data
       setOptimisticMessages([]);
       return result?.data || [];
@@ -164,12 +202,35 @@ export function useChatMessages(conversationId: string | null) {
     [sendApi.execute, fetchMessages],
   );
 
-  // Load messages when conversation ID is available
+  // Load messages and check conversation status when conversation ID is available
   useEffect(() => {
     if (conversationId) {
       fetchMessages(conversationId);
+      // Also check if conversation is killed by trying to fetch messages
+      // The API will return conversation status along with messages
     }
   }, [conversationId, fetchMessages]);
+
+  // Check if conversation is killed based on send error or fetch error
+  useEffect(() => {
+    if (
+      sendApi.error &&
+      sendApi.error.includes("closed and cannot accept new messages")
+    ) {
+      setIsConversationKilled(true);
+    }
+  }, [sendApi.error]);
+
+  // Also check fetch errors for conversation status
+  useEffect(() => {
+    if (
+      fetchApi.error &&
+      (fetchApi.error.includes("closed and cannot accept new messages") ||
+        fetchApi.error.includes("conversation has been killed"))
+    ) {
+      setIsConversationKilled(true);
+    }
+  }, [fetchApi.error]);
 
   // Combine real messages with optimistic messages and sort by creation date
   const allMessages = [
@@ -192,6 +253,10 @@ export function useChatMessages(conversationId: string | null) {
       error: sendApi.error,
       execute: sendMessage,
       setError: sendApi.setError,
+    },
+    conversation: {
+      isKilled: isConversationKilled,
+      setKilled: setIsConversationKilled,
     },
   };
 }

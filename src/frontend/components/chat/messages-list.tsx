@@ -3,6 +3,7 @@ import { ChatMessage } from "./chat-message.tsx";
 import { LoadingIndicator } from "./loading-indicator.tsx";
 import { EmptyState } from "./empty-state.tsx";
 import { TypingIndicator } from "./typing-indicator.tsx";
+import { ConversationKilledNotice } from "./conversation-killed-notice.tsx";
 
 interface Message {
   id: string;
@@ -16,12 +17,14 @@ interface MessagesListProps {
   messages: Message[];
   isLoading: boolean;
   isSending: boolean;
+  isConversationKilled?: boolean;
 }
 
 export function MessagesList({
   messages,
   isLoading,
   isSending,
+  isConversationKilled,
 }: MessagesListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -47,6 +50,9 @@ export function MessagesList({
             <ChatMessage key={message.id} message={message} />
           ))}
           <TypingIndicator isVisible={isSending} />
+          {isConversationKilled && (
+            <ConversationKilledNotice className="mt-4" />
+          )}
         </>
       )}
 

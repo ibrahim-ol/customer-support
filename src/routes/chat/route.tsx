@@ -84,7 +84,7 @@ router.post(
             error:
               "This conversation has been closed and cannot accept new messages",
           },
-          403
+          403,
         );
       }
     }
@@ -95,9 +95,8 @@ router.post(
       conversationId,
     });
 
-    const chatHistory = await ChatRepository.getConversationChats(
-      conversationId
-    );
+    const chatHistory =
+      await ChatRepository.getConversationChats(conversationId);
 
     // generate ai response here
     const reply = await generateReply({
@@ -125,7 +124,7 @@ router.post(
         result: reply,
       },
     });
-  })
+  }),
 );
 
 router.get("/", apiRateLimit, async (c) => {
@@ -140,9 +139,24 @@ router.get("/:conversationId", apiRateLimit, async (c) => {
     return c.json({ error: "Invalid conversation id" }, 400);
   }
 
+  // Check if conversation exists and get its status
+  const conversation =
+    await ChatRepository.findConversationById(conversationId);
+  if (!conversation) {
+    return c.json({ error: "Conversation not found" }, 404);
+  }
+
   const result = await ChatRepository.getConversationChats(conversationId);
 
-  return c.json({ data: result });
+  return c.json({
+    data: result,
+    conversation: {
+      id: conversation.id,
+      status: conversation.status,
+      customerName: conversation.customerName,
+      channel: conversation.channel,
+    },
+  });
 });
 
 /// # GET conversation analytics (mood and summary)

@@ -6,6 +6,7 @@ interface ChatHeaderProps {
   isLoading: boolean;
   error: string | null;
   onErrorDismiss: () => void;
+  isConversationKilled?: boolean;
 }
 
 export function ChatHeader({
@@ -13,13 +14,21 @@ export function ChatHeader({
   isLoading,
   error,
   onErrorDismiss,
+  isConversationKilled,
 }: ChatHeaderProps) {
   return (
     <div className="bg-white border-b border-black px-4 py-2">
       <div className="flex items-center justify-between">
-        <a href="/chat/new" className="text-sm hover:underline">
-          New Conversation
-        </a>
+        <div className="flex items-center space-x-3">
+          <a href="/chat/new" className="text-sm hover:underline">
+            New Conversation
+          </a>
+          {isConversationKilled && (
+            <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full font-medium">
+              CONVERSATION CLOSED
+            </span>
+          )}
+        </div>
         <button
           onClick={onRefresh}
           disabled={isLoading}

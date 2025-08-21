@@ -10,7 +10,7 @@ import {
 export function OngoingChatView() {
   const [conversationId, setConversationId] = useState<string | null>(null);
 
-  const { messages, send } = useChatMessages(conversationId);
+  const { messages, send, conversation } = useChatMessages(conversationId);
 
   // Get conversation ID from URL
   useEffect(() => {
@@ -77,18 +77,21 @@ export function OngoingChatView() {
           isLoading={messages.isLoading}
           error={messages.error}
           onErrorDismiss={handleErrorDismiss}
+          isConversationKilled={conversation.isKilled}
         />
 
         <MessagesList
           messages={messages.list}
           isLoading={messages.isLoading}
           isSending={send.isSending}
+          isConversationKilled={conversation.isKilled}
         />
 
         <MessageInput
           onSendMessage={handleSendMessage}
           isDisabled={send.isSending}
           messageCount={messages.list.length}
+          isConversationKilled={conversation.isKilled}
         />
       </div>
     </ChatLayout>
