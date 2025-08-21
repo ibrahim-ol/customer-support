@@ -34,3 +34,9 @@ sqlite.db
 
 # frontend
 static/fe/*
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
