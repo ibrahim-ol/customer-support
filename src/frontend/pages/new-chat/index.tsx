@@ -26,7 +26,7 @@ function StartChatView() {
           />
           <button
             disabled={submitted}
-            className="text-xs disabled:opacity-50 hover:scale-110 hover:-translate-y-0.5 transition-transform absolute right-2 bottom-2 bg-black text-white px-4 py-1 rounded-full"
+            className="text-xs disabled:opacity-50 hover:right-4 hover:scale-120 hover:-translate-y-0.5 transition-all absolute right-2 bottom-2 bg-black text-white px-4 py-1 rounded-full"
             type="submit"
           >
             {submitted ? "Sending..." : "Send"}
