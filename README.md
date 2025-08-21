@@ -4,13 +4,20 @@ A Chat application with Admin dashboard built with Hono, TypeScript, and Hono JS
 
 ## Prerequisites
 - Node.js 18+ and Yarn package manager
+- Cloudflare account
 
 ## Development
 
 To develop locally:
 
+Create a .`env` file
+
+Copy the content of `.env.example` into the `.env`
+
+Run the command below
 ```bash
 yarn install
+yarn db:push
 yarn start
 ```
 

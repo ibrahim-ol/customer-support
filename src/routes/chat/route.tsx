@@ -4,16 +4,10 @@ import { db } from "../../db/index.ts";
 import { conversations } from "../../db/schema.ts";
 import { chatSchema } from "./schema.ts";
 import { validateReqBody } from "../../utils/index.ts";
-import {
-  cleanReply,
-  generateReply,
-  generateSummary,
-  classifyMood,
-} from "../../services/ai.service.ts";
+import { cleanReply, generateReply } from "../../services/ai.service.ts";
 import { ChatRepository } from "./repository.ts";
 import { RenderClientView } from "../../utils/view.tsx";
 import {
-  chatRateLimit,
   conversationRateLimit,
   apiRateLimit,
   strictRateLimit,
