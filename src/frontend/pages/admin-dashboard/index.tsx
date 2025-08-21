@@ -7,6 +7,7 @@ import { QuickActions } from "./quick-actions.tsx";
 import { GeneralStats } from "./general-stats.tsx";
 import { ActionableInsights } from "../../components/mood/actionable-insights.tsx";
 import { useMoodAnaltyics } from "../../components/mood/api.ts";
+import { AdminHeader } from "../../components/admin-header.tsx";
 
 function AdminDashboardView() {
   const summariesApi = useFetch<RecentSummariesResponse>(
@@ -19,20 +20,7 @@ function AdminDashboardView() {
   return (
     <div className="flex flex-col h-screen bg-white">
       {/* Header */}
-      <header className="text-black px-4 py-2 border-b border-black">
-        <div className="flex justify-between items-center">
-          <h1 className="text-lg font-bold">Admin Dashboard</h1>
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-black">Welcome, Admin</span>
-            <a
-              href="/admin/logout"
-              className="bg-black text-white px-4 py-2 hover:bg-gray-800 transition-colors font-medium border border-black"
-            >
-              Logout
-            </a>
-          </div>
-        </div>
-      </header>
+      <AdminHeader title="Admin Dashboard" />
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-6">

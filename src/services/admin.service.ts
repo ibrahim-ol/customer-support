@@ -36,7 +36,9 @@ export const AdminService = {
         updatedAt: conversations.updatedAt,
         messageCount: sql<number>`count(${chat.id})`.as("messageCount"),
         lastMessage: sql<string>`max(${chat.message})`.as("lastMessage"),
-        lastMessageAt: sql<Date>`max(${chat.createdAt})`.as("lastMessageAt"),
+        lastMessageAt: sql<Date>`max(${chat.createdAt})`
+          .mapWith((v) => new Date(v * 1000))
+          .as("lastMessageAt"),
       })
       .from(conversations)
       .leftJoin(chat, eq(conversations.id, chat.conversationId))

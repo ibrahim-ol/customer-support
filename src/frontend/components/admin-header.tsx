@@ -1,3 +1,39 @@
+export function AdminHeader({
+  back,
+  title,
+}: {
+  title: string;
+  back?: { text: string; link: string };
+}) {
+  return (
+    <header className="sticky top-0  bg-white text-black px-4 py-2 border-b border-black">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center space-x-4">
+          {back && (
+            <a
+              href={back.link}
+              className="text-black hover:text-gray-600 transition-colors"
+            >
+              ← {back.text}
+            </a>
+          )}
+
+          <h1 className="text-lg font-bold">{title}</h1>
+        </div>
+        <div className="flex items-center space-x-4">
+          <span className="text-sm text-black">Welcome, Admin</span>
+          <a
+            href="/admin/logout"
+            className="bg-black text-white px-4 py-2 hover:bg-gray-800 transition-colors font-medium border border-black"
+          >
+            Logout
+          </a>
+        </div>
+      </div>
+    </header>
+  );
+}
+
 export function AdminAlternateHeader({
   title,
   subtitle,

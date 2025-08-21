@@ -20,6 +20,7 @@
     "hono": "^4.9.2",
     "hono-rate-limiter": "^0.4.2",
     "openai": "^5.12.2",
+    "react-hot-toast": "^2.6.0",
     "uuid": "^11.1.0",
     "workers-ai-provider": "^0.7.5",
     "zod": "^3.23.8"

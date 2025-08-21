@@ -196,9 +196,17 @@ export function useChatMessages(conversationId: string | null) {
   };
 }
 
-export function useFetch<TResponse>(url: string, auth: boolean) {
+export function useFetch<TResponse>(
+  url: string,
+  auth: boolean,
+  enabled = true,
+) {
   const { execute, ...api } = useApi<TResponse>();
   const refresh = () => {
+    if (!enabled) {
+      return;
+    }
+
     return execute(url, auth ? { credentials: "include" } : {});
   };
 
@@ -211,3 +219,5 @@ export function useFetch<TResponse>(url: string, auth: boolean) {
     refresh,
   };
 }
+
+export type UseFetchReturn<T> = ReturnType<typeof useFetch<T>>;

@@ -1,61 +1,30 @@
 import { BaseLayout, setupView } from "../../../utils/view.tsx";
 import { useState, useEffect } from "hono/jsx";
-import { ContentCard } from "../../components/cards/index.tsx";
 import { ConversationSummary } from "../../components/summary/index.tsx";
-import { useApi } from "../../hooks/useApi.ts";
-import { MoodCategory } from "../../../types/mood.ts";
-import { getMoodColor, getMoodEmoji } from "../../components/utils.tsx";
-
-interface Message {
-  id: string;
-  message: string;
-  role: "user" | "assistant";
-  userId: string | null;
-  createdAt: string;
-}
-
-interface ConversationListItem {
-  id: string;
-  customerName: string;
-  channel: string;
-  status: "active" | "killed";
-  mood: MoodCategory;
-  createdAt: string;
-  updatedAt: string;
-  messageCount: number;
-  lastMessage: string;
-  lastMessageAt: string;
-  summaryPreview: string;
-}
-
-interface ConversationDetails extends ConversationListItem {
-  messages: Message[];
-  summary: string;
-}
-
-interface ConversationsResponse {
-  success: boolean;
-  data: ConversationListItem[];
-}
-
-interface ConversationDetailResponse {
-  success: boolean;
-  data: ConversationDetails;
-}
+import { useApi, useFetch } from "../../hooks/useApi.ts";
+import {
+  formatDate,
+  getMoodColor,
+  getMoodEmoji,
+} from "../../components/utils.tsx";
+import { AdminHeader } from "../../components/admin-header.tsx";
+import { ConversationSidebar } from "./conversations-sidebar.tsx";
+import { ConversationDetailResponse, ConversationsResponse } from "./types.ts";
+import { ChatMessages } from "./messages.tsx";
 
 function AdminConversationsView() {
-  const conversationsApi = useApi<ConversationsResponse>();
-  const conversationDetailApi = useApi<ConversationDetailResponse>();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const conversationsApi = useFetch<ConversationsResponse>(
+    "/admin/api/conversations",
+    true,
+  );
+  const conversationDetailApi = useFetch<ConversationDetailResponse>(
+    `/admin/api/conversations/${selectedId}`,
+    true,
+    !!selectedId,
+  );
   const killApi = useApi<{ success: boolean; message: string }>();
   const reactivateApi = useApi<{ success: boolean; message: string }>();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  // Fetch conversations list on mount
-  useEffect(() => {
-    conversationsApi.execute("/admin/api/conversations", {
-      credentials: "include",
-    });
-  }, []);
 
   // Handle pre-selection via query parameter
   useEffect(() => {
@@ -66,40 +35,11 @@ function AdminConversationsView() {
         (c) => c.id === selectedParam,
       );
       if (conversationExists) {
-        handleSelectConversation(selectedParam);
+        setSelectedId(selectedParam);
       }
     }
   }, [conversationsApi.data?.data]);
 
-  // Fetch conversation details when selected
-  const handleSelectConversation = async (conversationId: string) => {
-    setSelectedId(conversationId);
-    await conversationDetailApi.execute(
-      `/admin/api/conversations/${conversationId}`,
-      {
-        credentials: "include",
-      },
-    );
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const formatMessageTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const conversations = conversationsApi.data?.data || [];
   const selectedConversation = conversationDetailApi.data?.data;
 
   const handleKillConversation = async (conversationId: string) => {
@@ -118,16 +58,9 @@ function AdminConversationsView() {
 
     if (killApi.data?.success) {
       // Refresh conversations list and selected conversation
-      conversationsApi.execute("/admin/api/conversations", {
-        credentials: "include",
-      });
+      conversationsApi.refresh();
       if (selectedId === conversationId) {
-        conversationDetailApi.execute(
-          `/admin/api/conversations/${conversationId}`,
-          {
-            credentials: "include",
-          },
-        );
+        conversationDetailApi.refresh();
       }
     }
   };
@@ -143,16 +76,9 @@ function AdminConversationsView() {
 
     if (reactivateApi.data?.success) {
       // Refresh conversations list and selected conversation
-      conversationsApi.execute("/admin/api/conversations", {
-        credentials: "include",
-      });
+      conversationsApi.refresh();
       if (selectedId === conversationId) {
-        conversationDetailApi.execute(
-          `/admin/api/conversations/${conversationId}`,
-          {
-            credentials: "include",
-          },
-        );
+        conversationDetailApi.refresh();
       }
     }
   };
@@ -160,134 +86,19 @@ function AdminConversationsView() {
   return (
     <div className="flex flex-col h-screen bg-white">
       {/* Header */}
-      <header className="text-black px-4 py-2 border-b border-black">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <a
-              href="/admin/dashboard"
-              className="text-black hover:text-gray-600 transition-colors"
-            >
-              ← Back to Dashboard
-            </a>
-            <h1 className="text-lg font-bold">Conversations</h1>
-          </div>
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-black">Welcome, Admin</span>
-            <a
-              href="/admin/logout"
-              className="bg-black text-white px-4 py-2 hover:bg-gray-800 transition-colors font-medium border border-black"
-            >
-              Logout
-            </a>
-          </div>
-        </div>
-      </header>
+      <AdminHeader
+        title="Conversations"
+        back={{ text: "Back to Dashboard", link: "/admin/dashboard" }}
+      />
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar - Conversations List */}
-        <div className="w-1/3 border-r border-black bg-gray-50 overflow-y-auto">
-          <div className="p-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="font-bold text-black">
-                All Conversations ({conversations.length})
-              </h2>
-              <button
-                onClick={() =>
-                  conversationsApi.execute("/admin/api/conversations", {
-                    credentials: "include",
-                  })
-                }
-                disabled={conversationsApi.isLoading}
-                className="px-3 py-1 text-sm bg-black text-white hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-              >
-                {conversationsApi.isLoading ? "Loading..." : "Refresh"}
-              </button>
-            </div>
-
-            {conversationsApi.error && (
-              <div className="text-center py-8">
-                <div className="text-red-600 p-4 border border-red-200 bg-red-50">
-                  Error: {conversationsApi.error}
-                </div>
-              </div>
-            )}
-
-            {conversationsApi.isLoading ? (
-              <div className="text-center py-8">
-                <div className="text-gray-600">Loading conversations...</div>
-              </div>
-            ) : conversations.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="text-gray-600">No conversations found</div>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {conversations.map((conversation) => (
-                  <div
-                    key={conversation.id}
-                    className={`p-3 border border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors ${
-                      selectedId === conversation.id
-                        ? "bg-gray-200 border-black"
-                        : ""
-                    }`}
-                    onClick={() => handleSelectConversation(conversation.id)}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex items-center space-x-2">
-                        <h3 className="font-semibold text-black truncate">
-                          {conversation.customerName || "Anonymous"}
-                        </h3>
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded border ${getMoodColor(
-                            conversation.mood,
-                          )}`}
-                          title={`Mood: ${conversation.mood}`}
-                        >
-                          {getMoodEmoji(conversation.mood)}
-                        </span>
-                        {conversation.status === "killed" && (
-                          <span className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">
-                            KILLED
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-xs text-gray-500 ml-2">
-                        {conversation.channel}
-                      </span>
-                    </div>
-
-                    <p className="text-sm text-gray-700 truncate mb-2">
-                      {conversation.lastMessage || "No messages"}
-                    </p>
-
-                    {conversation.summaryPreview && (
-                      <div className="bg-blue-50 border-l-2 border-blue-200 p-2 mb-2 rounded-r text-xs">
-                        <div className="text-blue-600 font-medium mb-1 flex items-center">
-                          <span className="mr-1">🤖</span>
-                          Summary:
-                        </div>
-                        <p className="text-gray-600 leading-relaxed">
-                          {conversation.summaryPreview}
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="flex justify-between items-center text-xs text-gray-500">
-                      <span>{conversation.messageCount} messages</span>
-                      <span>
-                        {formatDate(
-                          conversation.lastMessageAt || conversation.createdAt,
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
+        <ConversationSidebar
+          conversationsApi={conversationsApi}
+          selectedId={selectedId}
+          onSelectConversation={(id) => setSelectedId(id)}
+        />
         {/* Main Content Area - Conversation Details */}
         <div className="flex-1 flex flex-col">
           {conversationDetailApi.error && (
@@ -342,7 +153,6 @@ function AdminConversationsView() {
                         onClick={() =>
                           window.open(
                             `/admin/conversations/${selectedConversation.id}/mood`,
-                            "_blank",
                           )
                         }
                       >
@@ -409,55 +219,10 @@ function AdminConversationsView() {
               )}
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-                {conversationDetailApi.isLoading ? (
-                  <div className="text-center py-8">
-                    <div className="text-gray-600">Loading conversation...</div>
-                  </div>
-                ) : (
-                  <>
-                    {selectedConversation.status === "killed" && (
-                      <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
-                        <div className="text-red-800 font-medium text-center">
-                          🚫 This conversation has been killed. The user cannot
-                          send new messages.
-                        </div>
-                      </div>
-                    )}
-                    <div className="space-y-4 max-w-4xl mx-auto">
-                      {selectedConversation.messages.map((message) => (
-                        <div
-                          key={message.id}
-                          className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                        >
-                          <div
-                            className={`max-w-[70%] p-3 rounded-lg ${
-                              message.role === "user"
-                                ? "bg-blue-500 text-white"
-                                : "bg-white text-black border border-gray-300"
-                            }`}
-                          >
-                            <div className="mb-1">
-                              <div className="text-sm whitespace-pre-wrap">
-                                {message.message}
-                              </div>
-                            </div>
-                            <div
-                              className={`text-xs ${
-                                message.role === "user"
-                                  ? "text-blue-100"
-                                  : "text-gray-500"
-                              }`}
-                            >
-                              {formatMessageTime(message.createdAt)}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
+              <ChatMessages
+                isLoading={conversationsApi.isLoading}
+                selectedConversation={selectedConversation}
+              />
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center bg-gray-50">

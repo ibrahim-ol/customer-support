@@ -1,8 +1,10 @@
 import { BaseLayout, setupView } from "../../../utils/view.tsx";
 import { useState, useEffect } from "hono/jsx";
 import { MoodHistory } from "../../components/mood/mood-history.tsx";
-import { useApi } from "../../hooks/useApi.ts";
+import { useApi, useFetch } from "../../hooks/useApi.ts";
 import { MoodCategory } from "../../../types/mood.ts";
+import { AdminHeader } from "../../components/admin-header.tsx";
+import { formatDate } from "../../components/utils.tsx";
 
 interface MoodHistoryEntry {
   id: string;
@@ -37,9 +39,17 @@ interface ConversationResponse {
 }
 
 function ConversationMoodHistoryView() {
-  const moodApi = useApi<MoodHistoryResponse>();
-  const conversationApi = useApi<ConversationResponse>();
   const [conversationId, setConversationId] = useState<string>("");
+  const moodApi = useFetch<MoodHistoryResponse>(
+    `/admin/api/conversations/${conversationId}/mood`,
+    true,
+    !!conversationId,
+  );
+  const conversationApi = useFetch<ConversationResponse>(
+    `/admin/api/conversations/${conversationId}`,
+    true,
+    !!conversationId,
+  );
 
   // Extract conversation ID from URL
   useEffect(() => {
@@ -50,56 +60,16 @@ function ConversationMoodHistoryView() {
     }
   }, []);
 
-  // Fetch mood history and conversation details when ID is available
-  useEffect(() => {
-    if (conversationId) {
-      moodApi.execute(`/admin/api/conversations/${conversationId}/mood`, {
-        credentials: "include",
-      });
-      conversationApi.execute(`/admin/api/conversations/${conversationId}`, {
-        credentials: "include",
-      });
-    }
-  }, [conversationId]);
-
   const moodData = moodApi.data?.data;
   const conversationData = conversationApi.data?.data;
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
       {/* Header */}
-      <header className="text-black px-4 py-2 border-b border-black">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <a
-              href="/admin/conversations"
-              className="text-black hover:text-gray-600 transition-colors"
-            >
-              ← Back to Conversations
-            </a>
-            <h1 className="text-lg font-bold">Mood History</h1>
-          </div>
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-black">Welcome, Admin</span>
-            <a
-              href="/admin/logout"
-              className="bg-black text-white px-4 py-2 hover:bg-gray-800 transition-colors font-medium border border-black"
-            >
-              Logout
-            </a>
-          </div>
-        </div>
-      </header>
+      <AdminHeader
+        title="Mood History"
+        back={{ text: "Back to Conversations", link: "/admin/conversations" }}
+      />
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-6">
