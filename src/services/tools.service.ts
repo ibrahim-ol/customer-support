@@ -6,7 +6,7 @@ import { like, or } from "drizzle-orm";
 
 export const getProducts = tool({
   description:
-    "Get the list of available services and products offered by the company. Use this when customers ask about services, pricing, or what the company offers.",
+    "Get the list of available services and products offered by the company. Use this when customers ask about services, pricing, or what the company offers. Format the response clearly with service names, descriptions, and prices in a structured way for easy reading.",
   parameters: z.object({
     query: z
       .string()
@@ -35,20 +35,23 @@ export const getProducts = tool({
         // Get all products
         products = await db.select().from(product);
       }
-      console.log("Returning with", products.length, "products");
+
       return {
         success: true,
         products: products.map((p) => ({
           name: p.name,
-          price: p.price,
+          price: `€${p.price.toLocaleString()}`,
           description: p.description,
         })),
+        message: `Found ${products.length} service(s). Present these in a clear, structured format with service names, descriptions, and pricing.`,
       };
     } catch (error) {
       return {
         success: false,
         error: "Failed to fetch products",
         products: [],
+        message:
+          "Unable to retrieve services at this time. Please try again later.",
       };
     }
   },
