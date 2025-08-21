@@ -68,7 +68,10 @@ function ConversationMoodHistoryView() {
       {/* Header */}
       <AdminHeader
         title="Mood History"
-        back={{ text: "Back to Conversations", link: "/admin/conversations" }}
+        back={{
+          text: "Back to Conversations",
+          link: `/admin/conversations?selected=${conversationId}`,
+        }}
       />
 
       {/* Main Content */}

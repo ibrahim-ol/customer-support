@@ -91,7 +91,14 @@ function AdminConversationsView() {
         <ConversationSidebar
           conversationsApi={conversationsApi}
           selectedId={selectedId}
-          onSelectConversation={(id) => setSelectedId(id)}
+          onSelectConversation={(id) => {
+            setSelectedId(id);
+            window.history.pushState(
+              {},
+              "",
+              `/admin/conversations?selected=${id}`,
+            );
+          }}
         />
         {/* Main Content Area - Conversation Details */}
         <div className="flex-1 flex flex-col">
@@ -142,16 +149,12 @@ function AdminConversationsView() {
                       <span>
                         {selectedConversation.messages.length} messages
                       </span>
-                      <button
+                      <a
                         className="text-blue-600 hover:text-blue-800 underline"
-                        onClick={() =>
-                          window.open(
-                            `/admin/conversations/${selectedConversation.id}/mood`,
-                          )
-                        }
+                        href={`/admin/conversations/${selectedConversation.id}/mood`}
                       >
                         View Mood History
-                      </button>
+                      </a>
                     </div>
                   </div>
 
