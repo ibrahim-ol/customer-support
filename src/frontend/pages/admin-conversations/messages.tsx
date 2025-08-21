@@ -1,3 +1,5 @@
+import { MoodBadge } from "../../components/mood/mood-badge.tsx";
+import { getMoodColor, getMoodEmoji } from "../../components/utils.tsx";
 import { ConversationDetails } from "./types.ts";
 
 export function ChatMessages({
@@ -32,7 +34,7 @@ export function ChatMessages({
                 <div
                   className={`max-w-[70%] p-3 rounded-lg ${
                     message.role === "user"
-                      ? "bg-blue-500 text-white"
+                      ? "border border-blue-500 text-gray-600"
                       : "bg-white text-black border border-gray-300"
                   }`}
                 >
@@ -41,18 +43,22 @@ export function ChatMessages({
                       {message.message}
                     </div>
                   </div>
-                  <div>
+                  <div className="flex items-end justify-between gap-4">
                     <span
                       className={`text-xs ${
                         message.role === "user"
-                          ? "text-blue-100"
+                          ? "text-blue-500"
                           : "text-gray-500"
                       }`}
                     >
                       {formatMessageTime(message.createdAt)}
                     </span>
 
-                    {message.role === "user"}
+                    {message.role === "user" ? (
+                      <MoodBadge mood={message.mood} />
+                    ) : (
+                      <span className="leading-tight">🤖</span>
+                    )}
                   </div>
                 </div>
               </div>

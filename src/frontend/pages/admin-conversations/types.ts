@@ -3,6 +3,7 @@ import { MoodCategory } from "../../../types/mood.ts";
 interface Message {
   id: string;
   message: string;
+  mood: MoodCategory;
   role: "user" | "assistant";
   userId: string | null;
   createdAt: string;

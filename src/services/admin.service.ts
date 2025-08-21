@@ -83,8 +83,19 @@ export const AdminService = {
     if (!conversation[0]) return null;
 
     const messages = await db
-      .select()
+      .select({
+        id: chat.id,
+        message: chat.message,
+        role: chat.role,
+        userId: chat.userId,
+        conversationId: chat.conversationId,
+        createdAt: chat.createdAt,
+        updatedAt: chat.updatedAt,
+        mood: moodTracking.mood,
+        moodCreatedAt: moodTracking.createdAt,
+      })
       .from(chat)
+      .leftJoin(moodTracking, eq(chat.id, moodTracking.messageId))
       .where(eq(chat.conversationId, id))
       .orderBy(chat.createdAt);
 

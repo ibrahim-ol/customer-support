@@ -1,3 +1,4 @@
+import { MoodBadge } from "../../components/mood/mood-badge.tsx";
 import {
   formatDate,
   getMoodColor,
@@ -18,7 +19,7 @@ export function ConversationSidebar({
   const conversations = conversationsApi.data?.data || [];
 
   return (
-    <div className="w-1/4 border-r border-black bg-gray-50 overflow-y-auto">
+    <div className="w-1/4 min-w-[340px] border-r border-black bg-gray-50 overflow-y-auto">
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-bold text-black">
@@ -66,14 +67,7 @@ export function ConversationSidebar({
                     <h3 className="font-semibold text-black truncate">
                       {conversation.customerName || "Anonymous"}
                     </h3>
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded border ${getMoodColor(
-                        conversation.mood,
-                      )}`}
-                      title={`Mood: ${conversation.mood}`}
-                    >
-                      {getMoodEmoji(conversation.mood)}
-                    </span>
+                    <MoodBadge mood={conversation.mood} />
                     {conversation.status === "killed" && (
                       <span className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">
                         KILLED

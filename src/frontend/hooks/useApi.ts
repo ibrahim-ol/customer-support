@@ -212,7 +212,7 @@ export function useFetch<TResponse>(
 
   useEffect(() => {
     refresh();
-  }, [url]);
+  }, [url, enabled]);
 
   return {
     ...api,

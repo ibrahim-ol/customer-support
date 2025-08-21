@@ -30,15 +30,10 @@ function AdminConversationsView() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const selectedParam = urlParams.get("selected");
-    if (selectedParam && conversationsApi.data?.data) {
-      const conversationExists = conversationsApi.data.data.find(
-        (c) => c.id === selectedParam,
-      );
-      if (conversationExists) {
-        setSelectedId(selectedParam);
-      }
+    if (selectedParam) {
+      setSelectedId(selectedParam);
     }
-  }, [conversationsApi.data?.data]);
+  }, []);
 
   const selectedConversation = conversationDetailApi.data?.data;
 
@@ -51,22 +46,23 @@ function AdminConversationsView() {
       return;
     }
 
-    await killApi.execute(`/admin/api/conversations/${conversationId}/kill`, {
-      method: "POST",
-      credentials: "include",
-    });
+    const response = await killApi.execute(
+      `/admin/api/conversations/${conversationId}/kill`,
+      {
+        method: "POST",
+        credentials: "include",
+      },
+    );
 
-    if (killApi.data?.success) {
+    if (response?.success) {
       // Refresh conversations list and selected conversation
       conversationsApi.refresh();
-      if (selectedId === conversationId) {
-        conversationDetailApi.refresh();
-      }
+      conversationDetailApi.refresh();
     }
   };
 
   const handleReactivateConversation = async (conversationId: string) => {
-    await reactivateApi.execute(
+    const response = await reactivateApi.execute(
       `/admin/api/conversations/${conversationId}/reactivate`,
       {
         method: "POST",
@@ -74,12 +70,11 @@ function AdminConversationsView() {
       },
     );
 
-    if (reactivateApi.data?.success) {
+    if (response?.success) {
       // Refresh conversations list and selected conversation
       conversationsApi.refresh();
-      if (selectedId === conversationId) {
-        conversationDetailApi.refresh();
-      }
+      conversationDetailApi.refresh();
+      // TODO toast
     }
   };
 
@@ -109,7 +104,7 @@ function AdminConversationsView() {
             </div>
           )}
 
-          {selectedConversation ? (
+          {selectedConversation?.id ? (
             <>
               {/* Conversation Header */}
               <div className="p-4 border-b border-gray-300 bg-white">
@@ -199,24 +194,6 @@ function AdminConversationsView() {
                   />
                 </div>
               </div>
-
-              {/* Error Messages */}
-              {(killApi.error || reactivateApi.error) && (
-                <div className="p-4 bg-red-50 border-b border-red-200">
-                  <div className="text-red-600">
-                    Error: {killApi.error || reactivateApi.error}
-                  </div>
-                </div>
-              )}
-
-              {/* Success Messages */}
-              {(killApi.data?.success || reactivateApi.data?.success) && (
-                <div className="p-4 bg-green-50 border-b border-green-200">
-                  <div className="text-green-600">
-                    {killApi.data?.message || reactivateApi.data?.message}
-                  </div>
-                </div>
-              )}
 
               {/* Messages */}
               <ChatMessages

@@ -1,6 +1,6 @@
 import { FC } from "hono/jsx";
 import { MoodCategory } from "../../../types/mood.ts";
-import { getMoodColor, getMoodEmoji } from "../utils.tsx";
+import { MoodBadge } from "../mood/mood-badge.tsx";
 
 interface RecentSummary {
   id: string;
@@ -139,12 +139,7 @@ export const RecentSummaries: FC<RecentSummariesProps> = ({
                 <h4 className="font-medium text-black">
                   {summary.customerName || "Anonymous"}
                 </h4>
-                <span
-                  className={`text-xs px-2 py-0.5 rounded border ${getMoodColor(summary.mood)}`}
-                  title={`Mood: ${summary.mood}`}
-                >
-                  {getMoodEmoji(summary.mood)}
-                </span>
+                <MoodBadge mood={summary.mood} />
                 {summary.status === "killed" && (
                   <span className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">
                     KILLED
