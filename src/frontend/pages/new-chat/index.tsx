@@ -29,7 +29,7 @@ function StartChatView() {
             className="text-xs disabled:opacity-50 hover:scale-110 hover:-translate-y-0.5 transition-transform absolute right-2 bottom-2 bg-black text-white px-4 py-1 rounded-full"
             type="submit"
           >
-            Send
+            {submitted ? "Sending..." : "Send"}
           </button>
           {error && (
             <p className="absolute -bottom-5 text-sm text-red-500 text-left w-full">

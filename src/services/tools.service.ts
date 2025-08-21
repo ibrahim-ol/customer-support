@@ -17,7 +17,7 @@ export const getProducts = tool({
   }),
   execute: async ({ query }) => {
     try {
-      console.log("Tool is being called");
+      console.log("Tool is being called", query);
       let products;
       if (query) {
         // Search products by name or description containing the query
@@ -30,11 +30,12 @@ export const getProducts = tool({
               like(product.description, `%${query}%`),
             ),
           );
-      } else {
+      }
+      if (!products || products.length === 0) {
         // Get all products
         products = await db.select().from(product);
       }
-
+      console.log("Returning with", products.length, "products");
       return {
         success: true,
         products: products.map((p) => ({

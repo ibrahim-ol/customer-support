@@ -9,7 +9,6 @@ interface ChatHeaderProps {
 }
 
 export function ChatHeader({
-  conversationId,
   onRefresh,
   isLoading,
   error,
@@ -18,9 +17,9 @@ export function ChatHeader({
   return (
     <div className="bg-white border-b border-black px-4 py-2">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-black">
-          Conversation: {conversationId.slice(0, 8)}...
-        </h2>
+        <a href="/chat/new" className="text-sm hover:underline">
+          New Conversation
+        </a>
         <button
           onClick={onRefresh}
           disabled={isLoading}

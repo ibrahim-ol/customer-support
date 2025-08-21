@@ -18,6 +18,7 @@ import {
   apiRateLimit,
   strictRateLimit,
 } from "../../middleware/rateLimit.ts";
+import { ChatService } from "../../services/chat.service.ts";
 
 const router = new Hono();
 
@@ -45,11 +46,6 @@ router.post("/new", conversationRateLimit, async (c) => {
     conversationId: conversation.id,
   });
 
-  // Classify user mood before generating reply
-  const userMood = await classifyMood({
-    chatHistory: [{ message, role: "user" }],
-  });
-
   const reply = await generateReply({
     chatHistory: [{ message, role: "user" }],
     conversationSummary: "",
@@ -63,30 +59,10 @@ router.post("/new", conversationRateLimit, async (c) => {
   });
 
   // Generate summary after assistant reply
-  const summary = await generateSummary({
-    chatHistory: [
-      { message, role: "user" },
-      { message: assistantReply, role: "assistant" },
-    ],
-  });
+  ChatService.updateSummary(conversation.id);
+  // Classify user mood and save
+  ChatService.updateConversationMood(conversation.id, messageRes.id);
 
-  // Save mood to both conversation table and mood tracking table
-  await Promise.all([
-    ChatRepository.updateConversationMood({
-      conversationId: conversation.id,
-      mood: userMood,
-    }),
-    ChatRepository.saveMoodTracking({
-      conversationId: conversation.id,
-      mood: userMood,
-      messageId: messageRes.id,
-    }),
-  ]);
-
-  await ChatRepository.saveSummary({
-    conversationId: conversation.id,
-    summary,
-  });
   return c.redirect(`/chat/view/${conversation.id}`);
 });
 
@@ -128,11 +104,6 @@ router.post(
     const chatHistory =
       await ChatRepository.getConversationChats(conversationId);
 
-    // Classify user mood before generating reply
-    const userMood = await classifyMood({
-      chatHistory: [...chatHistory, { message, role: "user" }],
-    });
-
     // generate ai response here
     const reply = await generateReply({
       chatHistory: chatHistory,
@@ -147,37 +118,9 @@ router.post(
     });
 
     // Generate summary after assistant reply
-    const updatedChatHistory = [
-      ...chatHistory,
-      { message, role: "user" as const },
-      { message: assistantReply, role: "assistant" as const },
-    ];
-
-    // Get existing summary to update it
-    const existingSummary =
-      await ChatRepository.getLatestSummary(conversationId);
-    const summary = await generateSummary({
-      chatHistory: updatedChatHistory,
-      previousSummary: existingSummary?.summary,
-    });
-
-    // Save mood to both conversation table and mood tracking table
-    await Promise.all([
-      ChatRepository.updateConversationMood({
-        conversationId,
-        mood: userMood,
-      }),
-      ChatRepository.saveMoodTracking({
-        conversationId,
-        mood: userMood,
-        messageId: messageRes.id,
-      }),
-    ]);
-
-    await ChatRepository.updateSummary({
-      conversationId,
-      summary,
-    });
+    ChatService.updateSummary(conversationId);
+    // Classify user mood and save
+    ChatService.updateConversationMood(conversationId, messageRes.id);
 
     return c.json({
       message: "Sent",

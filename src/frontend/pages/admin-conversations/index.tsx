@@ -1,4 +1,4 @@
-import { BaseLayout, setupView } from "../../../utils/view.tsx";
+import { setupView } from "../../../utils/view.tsx";
 import { useState, useEffect } from "hono/jsx";
 import { ConversationSummary } from "../../components/summary/index.tsx";
 import { useApi, useFetch } from "../../hooks/useApi.ts";
@@ -182,23 +182,21 @@ function AdminConversationsView() {
                     )}
                   </div>
                 </div>
-
-                {/* Conversation Summary */}
-                <div className="mt-6 pt-4 border-t border-gray-200">
-                  <ConversationSummary
-                    summary={selectedConversation.summary}
-                    isLoading={conversationDetailApi.isLoading}
-                    showTitle={true}
-                    className="max-w-none"
-                  />
-                </div>
               </div>
-
-              {/* Messages */}
-              <ChatMessages
-                isLoading={conversationsApi.isLoading}
-                selectedConversation={selectedConversation}
-              />
+              <div className="flex-1  overflow-y-auto ">
+                {/* Conversation Summary */}
+                <ConversationSummary
+                  summary={selectedConversation.summary}
+                  isLoading={conversationDetailApi.isLoading}
+                  showTitle={true}
+                  className="max-w-none pt-4  px-4 bg-gray-50"
+                />
+                {/* Messages */}
+                <ChatMessages
+                  isLoading={conversationsApi.isLoading}
+                  selectedConversation={selectedConversation}
+                />
+              </div>
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center bg-gray-50">

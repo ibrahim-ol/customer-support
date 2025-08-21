@@ -1,21 +1,21 @@
 import { generateText, CoreMessage, tool } from "ai";
 import { z } from "zod";
 import { like, or } from "drizzle-orm";
-import { replyModel } from "../utils/models.ts";
+import { replyModel, summaryModel } from "../utils/models.ts";
 import { Config } from "../utils/config.ts";
 import { MoodCategory, MOOD_ENUM } from "../types/mood.ts";
-import { db } from "../db/index.ts";
-import { product } from "../db/schema.ts";
+
 import { getProducts } from "./tools.service.ts";
+import { Constants } from "../utils/constants.ts";
 
 // Re-export for backward compatibility
 export type { MoodCategory };
 
 const instructions = [
   "You are an helpful customer support assistant.",
-  "You are an expert customer support assistant for my company.",
+  `You are an expert customer support assistant for ${Constants.APP_NAME} Software Solutions. `,
   "We don't offer products physical.",
-  "We offer specialized web services like building landing pages, campaign website, web front stores.",
+  "We offer specialized web services and software solutions",
   "If you need more context about the available services, there is a tool available for you to call to get the full list of services",
   "Do not tell the user that you are a computer program",
   "If asked tell them that you are an helpful customer service assistant.",
@@ -29,7 +29,8 @@ const instructions = [
     2. If a request is unrelated, respond with:
        "I’m focused on supporting customers and can’t help with that. Please ask me something related to the company and its services."
     3. Never try to answer off-topic requests.
-    4. Maintain a friendly and professional tone at all times.`,
+    4. Maintain a friendly and professional tone at all times.
+    5. Do not generate code or json in your replies`,
 ];
 export async function generateReply(args: {
   conversationSummary: string;
@@ -52,8 +53,18 @@ export async function generateReply(args: {
     tools: {
       getProducts,
     },
-    maxSteps: 2,
+    maxSteps: 3,
   });
+
+  if (result.steps.length > 0) {
+    console.log({
+      steps: result.steps.map((step) => ({
+        stepType: step.stepType,
+        toolCall: step.toolCalls.map((t) => t.toolName),
+        toolresult: step.toolResults,
+      })),
+    });
+  }
 
   return result;
 }
@@ -96,7 +107,7 @@ export async function generateSummary(args: {
   });
 
   const result = await generateText({
-    model: replyModel(),
+    model: summaryModel(),
     messages,
   });
 
