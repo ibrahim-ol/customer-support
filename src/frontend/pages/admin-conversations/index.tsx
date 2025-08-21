@@ -11,6 +11,7 @@ import { AdminHeader } from "../../components/admin-header.tsx";
 import { ConversationSidebar } from "./conversations-sidebar.tsx";
 import { ConversationDetailResponse, ConversationsResponse } from "./types.ts";
 import { ChatMessages } from "./messages.tsx";
+import { useRouteQuery } from "../../hooks/common-api-hooks.ts";
 
 function AdminConversationsView() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -25,15 +26,13 @@ function AdminConversationsView() {
   );
   const killApi = useApi<{ success: boolean; message: string }>();
   const reactivateApi = useApi<{ success: boolean; message: string }>();
-
+  const selectedQueryId = useRouteQuery("selected");
   // Handle pre-selection via query parameter
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const selectedParam = urlParams.get("selected");
-    if (selectedParam) {
-      setSelectedId(selectedParam);
+    if (selectedQueryId) {
+      setSelectedId(selectedQueryId);
     }
-  }, []);
+  }, [selectedQueryId]);
 
   const selectedConversation = conversationDetailApi.data?.data;
 

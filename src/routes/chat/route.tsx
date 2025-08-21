@@ -12,7 +12,6 @@ import {
 } from "../../services/ai.service.ts";
 import { ChatRepository } from "./repository.ts";
 import { RenderClientView } from "../../utils/view.tsx";
-import { StartChatView } from "../../frontend/pages/new-chat.tsx";
 import {
   chatRateLimit,
   conversationRateLimit,
@@ -24,7 +23,7 @@ const router = new Hono();
 
 /// # Chat view
 router.get("/new", async (c) => {
-  return c.html(<StartChatView error={c.req.query("error")} />);
+  return c.html(<RenderClientView name="new-chat" />);
 });
 router.get("/view/:conversationId", async (c) => {
   return c.html(<RenderClientView name="ongoing-chat" />);
