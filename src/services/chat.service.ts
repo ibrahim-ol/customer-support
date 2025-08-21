@@ -3,14 +3,14 @@ import { classifyMood, generateSummary } from "./ai.service.ts";
 
 export const ChatService = {
   async updateConversationMood(conversationId: string, messageId: string) {
-    console.log("updatinng the mood for", conversationId, messageId);
-    const chatHistory =
-      await ChatRepository.getConversationChats(conversationId);
+    const chatHistory = await ChatRepository.getConversationChats(
+      conversationId
+    );
 
     const userMood = await classifyMood({
       chatHistory,
     });
-console.log("the mood for", conversationId, "is", userMood);
+
     await Promise.all([
       ChatRepository.updateConversationMood({
         conversationId: conversationId,
@@ -26,10 +26,12 @@ console.log("the mood for", conversationId, "is", userMood);
 
   async updateSummary(conversationId: string) {
     // load chat chatHistory
-    const chatHistory =
-      await ChatRepository.getConversationChats(conversationId);
-    const existingSummary =
-      await ChatRepository.getLatestSummary(conversationId);
+    const chatHistory = await ChatRepository.getConversationChats(
+      conversationId
+    );
+    const existingSummary = await ChatRepository.getLatestSummary(
+      conversationId
+    );
     // Generate summary after assistant reply
     const summary = await generateSummary({
       chatHistory,
