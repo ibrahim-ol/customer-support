@@ -44,12 +44,15 @@ export const ChatRepository = {
         id: conversations.id,
         customerName: conversations.customerName,
         channel: conversations.channel,
+        status: conversations.status,
+        mood: conversations.mood,
         createdAt: conversations.createdAt,
         updatedAt: conversations.updatedAt,
-        mood: conversations.mood,
         messageCount: sql<number>`count(${chat.id})`.as("messageCount"),
         lastMessage: sql<string>`max(${chat.message})`.as("lastMessage"),
-        lastMessageAt: sql<Date>`max(${chat.createdAt})`.as("lastMessageAt"),
+        lastMessageAt: sql<Date>`max(${chat.createdAt})`
+          .mapWith((v) => new Date(v * 1000))
+          .as("lastMessageAt"),
       })
       .from(conversations)
       .leftJoin(chat, eq(conversations.id, chat.conversationId))
@@ -130,7 +133,7 @@ export const ChatRepository = {
 
   async getLatestSummary(conversationId: string) {
     const summary = await db
-      .select()
+      .select({ summary: aiSummary.summary })
       .from(aiSummary)
       .where(eq(aiSummary.conversationId, conversationId))
       .orderBy(desc(aiSummary.updatedAt))
@@ -231,5 +234,24 @@ export const ChatRepository = {
       negativeCount,
       neutralCount,
     };
+  },
+
+  async getMessagesWithMood(conversationId: string) {
+    return db
+      .select({
+        id: chat.id,
+        message: chat.message,
+        role: chat.role,
+        userId: chat.userId,
+        conversationId: chat.conversationId,
+        createdAt: chat.createdAt,
+        updatedAt: chat.updatedAt,
+        mood: moodTracking.mood,
+        moodCreatedAt: moodTracking.createdAt,
+      })
+      .from(chat)
+      .leftJoin(moodTracking, eq(chat.id, moodTracking.messageId))
+      .where(eq(chat.conversationId, conversationId))
+      .orderBy(chat.createdAt);
   },
 };

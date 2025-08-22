@@ -13,4 +13,5 @@ export const Config = {
   OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY ?? "",
   LOCAL_LLM_API_KEY: process.env.LOCAL_LLM_API_KEY ?? "",
   LOCAL_LLM_BASE_URL: process.env.LOCAL_LLM_BASE_URL ?? "",
+  GOOGLE_AI_API_KEY: process.env.GOOGLE_AI_API_KEY ?? "",
 };

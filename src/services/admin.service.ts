@@ -18,6 +18,7 @@ import {
   MoodAnalyticsData,
 } from "../types/responses.ts";
 import { getMoodScore } from "../frontend/components/utils.tsx";
+import { ChatRepository } from "../routes/chat/repository.ts";
 
 export const AdminService = {
   /**
@@ -25,39 +26,18 @@ export const AdminService = {
    */
   async getConversations() {
     // Get conversations with stats and summary preview
-    const results = await db
-      .select({
-        id: conversations.id,
-        customerName: conversations.customerName,
-        channel: conversations.channel,
-        status: conversations.status,
-        mood: conversations.mood,
-        createdAt: conversations.createdAt,
-        updatedAt: conversations.updatedAt,
-        messageCount: sql<number>`count(${chat.id})`.as("messageCount"),
-        lastMessage: sql<string>`max(${chat.message})`.as("lastMessage"),
-        lastMessageAt: sql<Date>`max(${chat.createdAt})`
-          .mapWith((v) => new Date(v * 1000))
-          .as("lastMessageAt"),
-      })
-      .from(conversations)
-      .leftJoin(chat, eq(conversations.id, chat.conversationId))
-      .groupBy(conversations.id)
-      .orderBy(desc(conversations.updatedAt));
+    const results = await ChatRepository.getConversationsWithStats();
 
     // Get summary previews for each conversation
     const conversationsWithSummary = await Promise.all(
       results.map(async (conversation) => {
-        const summaryResult = await db
-          .select({ summary: aiSummary.summary })
-          .from(aiSummary)
-          .where(eq(aiSummary.conversationId, conversation.id))
-          .orderBy(desc(aiSummary.updatedAt))
-          .limit(1);
+        const summaryResult = await ChatRepository.getLatestSummary(
+          conversation.id,
+        );
 
-        const summaryPreview = summaryResult[0]?.summary
-          ? summaryResult[0].summary.substring(0, 100) +
-            (summaryResult[0].summary.length > 100 ? "..." : "")
+        const summaryPreview = summaryResult?.summary
+          ? summaryResult.summary.substring(0, 100) +
+            (summaryResult.summary.length > 100 ? "..." : "")
           : "";
 
         return {
@@ -74,43 +54,19 @@ export const AdminService = {
    * Get detailed conversation with all messages
    */
   async getConversationDetails(id: string) {
-    const conversation = await db
-      .select()
-      .from(conversations)
-      .where(eq(conversations.id, id))
-      .limit(1);
+    const conversation = await ChatRepository.findConversationById(id);
 
-    if (!conversation[0]) return null;
+    if (!conversation) return null;
 
-    const messages = await db
-      .select({
-        id: chat.id,
-        message: chat.message,
-        role: chat.role,
-        userId: chat.userId,
-        conversationId: chat.conversationId,
-        createdAt: chat.createdAt,
-        updatedAt: chat.updatedAt,
-        mood: moodTracking.mood,
-        moodCreatedAt: moodTracking.createdAt,
-      })
-      .from(chat)
-      .leftJoin(moodTracking, eq(chat.id, moodTracking.messageId))
-      .where(eq(chat.conversationId, id))
-      .orderBy(chat.createdAt);
+    const messages = await ChatRepository.getMessagesWithMood(id);
 
     // Get the latest summary for this conversation
-    const summaryResult = await db
-      .select()
-      .from(aiSummary)
-      .where(eq(aiSummary.conversationId, id))
-      .orderBy(desc(aiSummary.updatedAt))
-      .limit(1);
+    const summaryResult = await ChatRepository.getLatestSummary(id);
 
-    const summary = summaryResult[0]?.summary || "";
+    const summary = summaryResult?.summary || "";
 
     return {
-      ...conversation[0],
+      ...conversation,
       messages,
       summary,
     };
@@ -324,7 +280,7 @@ export const AdminService = {
    */
   async killConversation(id: string): Promise<boolean> {
     try {
-      const result = await db
+      await db
         .update(conversations)
         .set({
           status: "killed",
@@ -344,7 +300,7 @@ export const AdminService = {
    */
   async reactivateConversation(id: string): Promise<boolean> {
     try {
-      const result = await db
+      await db
         .update(conversations)
         .set({
           status: "active",

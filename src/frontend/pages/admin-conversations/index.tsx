@@ -27,6 +27,7 @@ function AdminConversationsView() {
   const killApi = useApi<{ success: boolean; message: string }>();
   const reactivateApi = useApi<{ success: boolean; message: string }>();
   const selectedQueryId = useRouteQuery("selected");
+
   // Handle pre-selection via query parameter
   useEffect(() => {
     if (selectedQueryId) {
@@ -110,7 +111,7 @@ function AdminConversationsView() {
             </div>
           )}
 
-          {selectedConversation?.id ? (
+          {selectedConversation ? (
             <>
               {/* Conversation Header */}
               <div className="p-4 border-b border-gray-300 bg-white">
