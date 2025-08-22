@@ -8,14 +8,12 @@ An AI-powered customer support system featuring:
 - **AI Chat Interface**: Real-time conversations with intelligent responses
 - **Admin Dashboard**: Management interface with conversation monitoring
 - **Mood/Interest Analysis**: Customer sentiment evaluation and admin alerts
-- **Conversation Handover**: Seamless transition from AI to human support
 - **Product Management**: Full CRUD operations for products
 - **Rate Limiting**: Comprehensive protection against abuse
 
 ### Core Features
 - FAQ answering and service marketing
 - Customer mood and interest evaluation
-- Admin conversation takeover with AI assistance
 - Critical conversation escalation alerts
 - Response suggestions based on customer analysis
 - Product catalog management
@@ -65,7 +63,7 @@ Error:     #b91c1c (red-700) - critical alerts only
 - **Secure authentication** with session management (HTTP-only cookies, 1-hour expiration)
 - **Default credentials**: admin/admin123 (configurable via ADMIN_USERNAME/ADMIN_PASSWORD env vars)
 - **Dashboard interface** with stats and action cards
-- **Conversation monitoring** and handover capabilities
+- **Conversation monitoring** with summary
 - **Protected routes** with `requireAdminAuth` middleware
 - **Routes**: `/admin/login`, `/admin/dashboard`, `/admin/logout`, `/admin/conversations`, `/admin/products`
 
